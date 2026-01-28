@@ -155,6 +155,10 @@ namespace eos
             double imag_F27(const double & re_q2, const double & im_q2) const;
             double real_F29(const double & re_q2, const double & im_q2) const;
             double imag_F29(const double & re_q2, const double & im_q2) const;
+            double real_Delta_C7_Qc(const double & re_q2, const double & im_q2) const;
+            double imag_Delta_C7_Qc(const double & re_q2, const double & im_q2) const;
+            double real_Delta_C9_Qc(const double & re_q2, const double & im_q2) const;
+            double imag_Delta_C9_Qc(const double & re_q2, const double & im_q2) const;
 
             /*!
              * References used in the computation of our observables.

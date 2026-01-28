@@ -1481,7 +1481,7 @@ namespace eos
 
 
     /*
-     * Adapter that exports the charn loops function as observables
+     * Adapter that exports the charm loops function as observables
      */
     template <>
     struct Implementation<CharmLoopsAdapter>
@@ -1491,6 +1491,7 @@ namespace eos
         UsedParameter m_b;
         UsedParameter m_c;
         UsedParameter mu;
+        std::shared_ptr<Model> model;
 
         static const std::vector<OptionSpecification> options;
 
@@ -1512,6 +1513,7 @@ namespace eos
             m_c(p["mass::c"], u),
             mu(p["sb::mu"], u)
         {
+            model = Model::make(o.get("model"_ok, "SM"), p, o);
             auto i = contribution_map.find(opt_contribution.value());
             if (i == contribution_map.end())
                 throw InternalError("Unknown charm loops option: " + opt_contribution.value());
@@ -1522,6 +1524,16 @@ namespace eos
         inline agv_2019a::CharmLoopsParameters clp(const complex<double> & s) const
         {
             return agv_2019a::CharmLoopsParameters(mu / m_b, s / m_b() / m_b(), (m_c * m_c) / (m_b * m_b), 1e-12);
+        }
+
+        inline double alpha_s() const
+        {
+            return model->alpha_s(mu());
+        }
+
+        inline WilsonCoefficients<BToS> wc() const
+        {
+            return model->wilson_coefficients_b_to_s(mu(), LeptonFlavor::muon, false);
         }
 
         complex<double> F17(const complex<double> & s) const
@@ -1573,6 +1585,15 @@ namespace eos
                  + flag_ctQc * agv_2019a::f29ctQc(params)
                  + flag_ctQs * agv_2019a::f29ctQs(params)
                  + flag_ctQb * agv_2019a::f29ctQb(params);
+        }
+
+        complex<double> Delta_C7_Qc(const complex<double> & s) const
+        {
+            return agv_2019a::delta_c7_Qc(s, mu(), alpha_s(), m_c(), m_b(), wc(), true);
+        }
+        complex<double> Delta_C9_Qc(const complex<double> & s) const
+        {
+            return agv_2019a::delta_c9_Qc(s, mu(), alpha_s(), m_c(), m_b(), wc(), true);
         }
     };
 
@@ -1654,6 +1675,42 @@ namespace eos
     CharmLoopsAdapter::imag_F29(const double & re_q2, const double & im_q2) const
     {
         return imag(_imp->F29(complex<double>(re_q2, im_q2)));
+    }
+
+    double
+    CharmLoopsAdapter::real_Delta_C7_Qc(const double & re_q2, const double & im_q2) const
+    {
+        complex<double> q2(re_q2, im_q2);
+        complex<double> s = q2 / (_imp->m_b() * _imp->m_b());
+        complex<double> result = _imp->Delta_C7_Qc(s);
+        return real(result);
+    }
+
+    double
+    CharmLoopsAdapter::imag_Delta_C7_Qc(const double & re_q2, const double & im_q2) const
+    {
+        complex<double> q2(re_q2, im_q2);
+        complex<double> s = q2 / (_imp->m_b() * _imp->m_b());
+        complex<double> result = _imp->Delta_C7_Qc(s);
+        return imag(result);
+    }
+
+    double
+    CharmLoopsAdapter::real_Delta_C9_Qc(const double & re_q2, const double & im_q2) const
+    {
+        complex<double> q2(re_q2, im_q2);
+        complex<double> s = q2 / (_imp->m_b() * _imp->m_b());
+        complex<double> result = _imp->Delta_C9_Qc(s);
+        return real(result);
+    }
+
+    double
+    CharmLoopsAdapter::imag_Delta_C9_Qc(const double & re_q2, const double & im_q2) const
+    {
+        complex<double> q2(re_q2, im_q2);
+        complex<double> s = q2 / (_imp->m_b() * _imp->m_b());
+        complex<double> result = _imp->Delta_C9_Qc(s);
+        return imag(result);
     }
 
     const std::set<ReferenceName>

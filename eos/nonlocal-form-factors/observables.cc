@@ -536,6 +536,18 @@ namespace eos
                 make_observable("b->s::Im{F29}(Re{q2},Im{q2})", Unit::None(),
                         &CharmLoopsAdapter::imag_F29,
                         std::make_tuple("Re{q2}", "Im{q2}")),
+                make_observable("b->s::Re{Delta_C7_Qc}(Re{q2},Im{q2})", Unit::None(),
+                        &CharmLoopsAdapter::real_Delta_C7_Qc,
+                        std::make_tuple("Re{q2}", "Im{q2}")),
+                make_observable("b->s::Im{Delta_C7_Qc}(Re{q2},Im{q2})", Unit::None(),
+                        &CharmLoopsAdapter::imag_Delta_C7_Qc,
+                        std::make_tuple("Re{q2}", "Im{q2}")),
+                make_observable("b->s::Re{Delta_C9_Qc}(Re{q2},Im{q2})", Unit::None(),
+                        &CharmLoopsAdapter::real_Delta_C9_Qc,
+                        std::make_tuple("Re{q2}", "Im{q2}")),
+                make_observable("b->s::Im{Delta_C9_Qc}(Re{q2},Im{q2})", Unit::None(),
+                        &CharmLoopsAdapter::imag_Delta_C9_Qc,
+                        std::make_tuple("Re{q2}", "Im{q2}")),
 
                 // B->K
                 make_observable("B->Kgamma^*::Re{H_+}(q2)",
