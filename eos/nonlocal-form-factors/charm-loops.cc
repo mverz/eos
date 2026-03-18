@@ -1595,6 +1595,10 @@ namespace eos
         {
             return agv_2019a::delta_c9_Qc(s, mu(), alpha_s(), m_c(), m_b(), wc(), true);
         }
+        complex<double> Delta_C9_Qc_LO(const complex<double> & s) const
+        {
+            return agv_2019a::delta_c9_Qc(s, mu(), alpha_s(), m_c(), m_b(), wc(), false);
+        }
     };
 
     const std::vector<OptionSpecification>
@@ -1677,39 +1681,48 @@ namespace eos
         return imag(_imp->F29(complex<double>(re_q2, im_q2)));
     }
 
+
+    // To export these as observables functions of the real variable only
     double
-    CharmLoopsAdapter::real_Delta_C7_Qc(const double & re_q2, const double & im_q2) const
+    CharmLoopsAdapter::real_Delta_C7_Qc(const double & q2) const
     {
-        complex<double> q2(re_q2, im_q2);
-        complex<double> s = q2 / (_imp->m_b() * _imp->m_b());
+        complex<double> s(q2 / (_imp->m_b() * _imp->m_b()), 0.0);
         complex<double> result = _imp->Delta_C7_Qc(s);
         return real(result);
     }
-
     double
-    CharmLoopsAdapter::imag_Delta_C7_Qc(const double & re_q2, const double & im_q2) const
+    CharmLoopsAdapter::imag_Delta_C7_Qc(const double & q2) const
     {
-        complex<double> q2(re_q2, im_q2);
-        complex<double> s = q2 / (_imp->m_b() * _imp->m_b());
+        complex<double> s(q2 / (_imp->m_b() * _imp->m_b()), 0.0);
         complex<double> result = _imp->Delta_C7_Qc(s);
         return imag(result);
     }
-
     double
-    CharmLoopsAdapter::real_Delta_C9_Qc(const double & re_q2, const double & im_q2) const
+    CharmLoopsAdapter::real_Delta_C9_Qc(const double & q2) const
     {
-        complex<double> q2(re_q2, im_q2);
-        complex<double> s = q2 / (_imp->m_b() * _imp->m_b());
+        complex<double> s(q2 / (_imp->m_b() * _imp->m_b()), 0.0);
         complex<double> result = _imp->Delta_C9_Qc(s);
         return real(result);
     }
-
     double
-    CharmLoopsAdapter::imag_Delta_C9_Qc(const double & re_q2, const double & im_q2) const
+    CharmLoopsAdapter::imag_Delta_C9_Qc(const double & q2) const
     {
-        complex<double> q2(re_q2, im_q2);
-        complex<double> s = q2 / (_imp->m_b() * _imp->m_b());
+        complex<double> s(q2 / (_imp->m_b() * _imp->m_b()), 0.0);
         complex<double> result = _imp->Delta_C9_Qc(s);
+        return imag(result);
+    }
+    double
+    CharmLoopsAdapter::real_Delta_C9_Qc_LO(const double & q2) const
+    {
+        complex<double> s(q2 / (_imp->m_b() * _imp->m_b()), 0.0);
+        complex<double> result = _imp->Delta_C9_Qc_LO(s);
+        return real(result);
+    }
+    double
+    CharmLoopsAdapter::imag_Delta_C9_Qc_LO(const double & q2) const
+    {
+        complex<double> s(q2 / (_imp->m_b() * _imp->m_b()), 0.0);
+        complex<double> result = _imp->Delta_C9_Qc_LO(s);
         return imag(result);
     }
 

@@ -5995,6 +5995,13 @@ groups:
           unit:     'GeV^-2'
           latex:    '$\chi_{\mathrm{OPE}}$'
           comments: 'Dispersive bound in the OPE at t_s = -m_b^2'
+      'b->sccbar::chi~OPE@GRV2026' :
+          central: +0.000181
+          min:     +0.000179
+          max:     +0.000183
+          unit:     'GeV^-2'
+          latex:    '$\Tilde{\chi}_{\mathrm{OPE}}$'
+          comments: 'To be determined!'
       'b->sccbar::bound@GvDV2020' :
           central: +1.0
           min:     +1.0
