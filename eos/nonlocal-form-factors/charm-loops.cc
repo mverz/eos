@@ -1523,7 +1523,7 @@ namespace eos
 
         inline agv_2019a::CharmLoopsParameters clp(const complex<double> & s) const
         {
-            return agv_2019a::CharmLoopsParameters(mu / m_b, s / m_b() / m_b(), (m_c * m_c) / (m_b * m_b), 1e-12);
+            return agv_2019a::CharmLoopsParameters(mu / m_b(), s / m_b() / m_b(), (m_c * m_c) / (m_b() * m_b()), 1e-12);
         }
 
         inline double alpha_s() const
