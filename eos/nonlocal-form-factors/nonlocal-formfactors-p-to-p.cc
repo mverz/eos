@@ -1482,7 +1482,8 @@ namespace eos
 
                     const complex<double> factor_1 = std::pow(complex<double>(sG - q2) / complex<double>(sG - s_0), 0.25) * (sqrt_sG_s + sqrt_sG_s0);
                     const complex<double> factor_a = std::pow(complex<double>(sp - q2), 0.25 * a);
-                    const complex<double> factor_b = std::pow(sqrt_sG_s + sqrt_sG_sm, 0.5 * b);
+                    //const complex<double> factor_b = std::pow(sqrt_sG_s + sqrt_sG_sm, 0.5 * b);
+                    const complex<double> factor_b = std::pow(complex<double>(sm - q2), 0.25 * b);
                     const complex<double> factor_c = std::pow(sqrt_sG_s + sqrt_sG, -(c + 3.0));
                     const complex<double> factor_d = std::pow((sqrt_sG_s + sqrt_sG) / (sqrt_sG_s + sqrt_sG_Q2), d);
 
@@ -1500,7 +1501,14 @@ namespace eos
 
                 inline complex<double> phi(const double & q2, const std::array<unsigned, 6> & phi_parameters, const std::vector<double> & Mres) const
                 {
-                    return phi(complex<double>(q2, 0.0), phi_parameters, Mres);
+                    if (q2 < 4.0 * power_of<2>(m_D0))
+                    {
+                        return phi(complex<double>(q2, 0.0), phi_parameters, Mres);
+                    }
+                    else
+                    {
+                        return phi(complex<double>(q2, +1e-10), phi_parameters, Mres);
+                    }
                 }
 
                 // Residue of H at s = m_Jpsi2 computed as the residue wrt z -z_Jpsi divided by dz/ds evaluated at s = m_Jpsi2
@@ -1562,7 +1570,7 @@ namespace eos
 
                     // For B to K 
                     const std::array<unsigned, 6> phi_parameters = {3, 3, 4, 3, 4, 2};
-                    const std::vector<double> Mres = {m_Bs};
+                    const std::vector<double> Mres = {m_Bs_star};
 
                     const complex<double> p_at_z = lagrange(interpolation_values, z);
 
@@ -1605,7 +1613,7 @@ namespace eos
 
                     // For B to K 
                     const std::array<unsigned, 6> phi_parameters = {3, 3, 4, 3, 4, 2};
-                    const std::vector<double> Mres = {m_Bs};
+                    const std::vector<double> Mres = {m_Bs_star};
 
                     return H_residue_jpsi(phi_parameters, Mres, interpolation_values);
                 }
@@ -1623,7 +1631,7 @@ namespace eos
 
                     // For B to K 
                     const std::array<unsigned, 6> phi_parameters = {3, 3, 4, 3, 4, 2};
-                    const std::vector<double> Mres = {m_Bs};
+                    const std::vector<double> Mres = {m_Bs_star};
 
                     return H_residue_psi2s(phi_parameters, Mres, interpolation_values);
                 }
@@ -1666,50 +1674,14 @@ namespace eos
 
                     std::array<complex<double>, interpolation_order + 1> L_coeffs = lagrange.get_coefficients(interpolation_values);
 
-                    // Split array of coefficients to real and imaginary parts
-                    gsl_vector * L_coeffs_real_part = gsl_vector_calloc(interpolation_order + 1);
-                    gsl_vector * L_coeffs_imag_part = gsl_vector_calloc(interpolation_order + 1);
-
-                    for (unsigned i = 0; i <= interpolation_order; ++i)
-                    {
-                        gsl_vector_set(L_coeffs_real_part, i, real(L_coeffs[i]));
-                        gsl_vector_set(L_coeffs_imag_part, i, imag(L_coeffs[i]));
-                    }
-
-                    // To get the coeff for monomial basis, build Vandermonde V_ij = z_i^j (first column 1)
-                    // casting to real should be fine since for these s values the nodes lie on the real axis
-                    const std::array<double, interpolation_order + 1> z_nodes{
-                        real(eos::nff_utils::z(-7.0, 4.0 * power_of<2>(m_D0), t_0())),
-                        real(eos::nff_utils::z(-5.0, 4.0 * power_of<2>(m_D0), t_0())),
-                        real(eos::nff_utils::z(-3.0, 4.0 * power_of<2>(m_D0), t_0())),
-                        real(eos::nff_utils::z(-1.0, 4.0 * power_of<2>(m_D0), t_0())),
-                        real(eos::nff_utils::z(power_of<2>(m_Jpsi), 4.0 * power_of<2>(m_D0), t_0())),
-                        real(eos::nff_utils::z(power_of<2>(m_psi2S), 4.0 * power_of<2>(m_D0), t_0()))
-                    };
-
-                    gsl_matrix * coefficient_matrix = gsl_matrix_calloc(interpolation_order + 1, interpolation_order + 1);
-                    for (unsigned i = 0; i <= interpolation_order; ++i)
-                    {
-                        double p = 1.0;
-                        for (unsigned j = 0; j <= interpolation_order; ++j)
-                        {
-                            gsl_matrix_set(coefficient_matrix, i, j, p);
-                            p *= z_nodes[i];
-                        }
-                    }
-
-                    // Solve the system by computing (coefficient_matrix)^(-1): C_n = (V^-1)_ni . L_coeffs_i 
-                    // Bad conditioning -> SVD decomp to solve directly 
-                    // SVD factorization of coefficient_matrix = U * diag(S) * V^T (here V of SVD is not Vandermonde)
-                    gsl_matrix * V = gsl_matrix_alloc(interpolation_order + 1, interpolation_order + 1);
-                    gsl_vector * S = gsl_vector_alloc(interpolation_order + 1);
-                    gsl_vector * work = gsl_vector_alloc(interpolation_order + 1);
-                    gsl_linalg_SV_decomp(coefficient_matrix, V, S, work);
-
                     gsl_vector * C_real = gsl_vector_calloc(interpolation_order + 1);
                     gsl_vector * C_imag = gsl_vector_calloc(interpolation_order + 1);
-                    gsl_linalg_SV_solve(coefficient_matrix, V, S, L_coeffs_real_part, C_real);
-                    gsl_linalg_SV_solve(coefficient_matrix, V, S, L_coeffs_imag_part, C_imag);
+
+                    for (unsigned i = 0; i <= interpolation_order; ++i)
+                    {
+                        gsl_vector_set(C_real, i, std::real(L_coeffs[i]));
+                        gsl_vector_set(C_imag, i, std::imag(L_coeffs[i]));
+                    }
 
                     return std::make_pair(C_real, C_imag);
                 }
@@ -1758,10 +1730,15 @@ namespace eos
 
                     // For B to K
                     const std::array<unsigned, 6> phi_parameters = {3, 3, 4, 3, 4, 2};
-                    const std::vector<double> Mres = {m_Bs};
-
-                    results.add({ real(1./this->phi(0.0, phi_parameters, Mres)), "Re{1/phi_+(q2 = 0.0)}" });
-                    results.add({ imag(1./this->phi(0.0, phi_parameters, Mres)), "Im{1/phi_+(q2 = 0.0)}" });
+                    const std::vector<double> Mres = {m_Bs_star};
+                    
+                    
+                    results.add({ real(this->phi(-4.0, phi_parameters, Mres)), "Re{phi_+(q2 = -4.0)}" });
+                    results.add({ imag(this->phi(-4.0, phi_parameters, Mres)), "Im{phi_+(q2 = -4.0)}" });
+                    results.add({ real(this->phi(0.0, phi_parameters, Mres)), "Re{phi_+(q2 = 0.0)}" });
+                    results.add({ imag(this->phi(0.0, phi_parameters, Mres)), "Im{phi_+(q2 = 0.0)}" });
+                    results.add({ real(this->phi(7.0, phi_parameters, Mres)), "Re{phi_+(q2 = 7.0)}" });
+                    results.add({ imag(this->phi(7.0, phi_parameters, Mres)), "Im{phi_+(q2 = 7.0)}" });
                     results.add({ real(this->phi(16.0, phi_parameters, Mres)), "Re{phi_+(q2 = 16.0)}" });
                     results.add({ imag(this->phi(16.0, phi_parameters, Mres)), "Im{phi_+(q2 = 16.0)}" });
 
@@ -1776,25 +1753,29 @@ namespace eos
                     };
 
                     const double s_0 = this->t_0();
-                    const auto z1 = eos::nff_utils::z(1.0, 4.0 * power_of<2>(m_D0), s_0);
+                    const std::array<double, 6> q2_vals = {-7.0, -5.0, -3.0, -1.0, 1.0, 3.0};
 
-                    // p(z1) from lagrange
-                    const complex<double> p_lagrange = lagrange(interpolation_values, z1);
-
-                    // p(z1) from monomial coefficients
-                    complex<double> p_monomial = 0.0;
-                    complex<double> zpow = 1.0;
-                    for (unsigned i = 0; i <= interpolation_order; ++i)
+                    for (const double & q2_val : q2_vals)
                     {
-                        p_monomial += get_monomial_coefficients(i) * zpow;
-                        zpow *= z1;
+                        auto z = eos::nff_utils::z(q2_val, 4.0 * power_of<2>(m_D0), s_0);
+
+                        // p(z) from lagrange
+                        complex<double> p_lagrange = lagrange(interpolation_values, z);
+
+                        // p(z) from monomial coefficients
+                        complex<double> p_monomial = 0.0;
+                        complex<double> zpow = 1.0;
+                        for (unsigned i = 0; i <= interpolation_order; ++i)
+                        {
+                            p_monomial += get_monomial_coefficients(i) * zpow;
+                            zpow *= z;
+                        }
+
+                        //results.add({ std::real(p_lagrange), "Re{P_GRV2026_lagrange(q2 = " + std::to_string(q2_val) + ")}" });
+                        //results.add({ std::imag(p_lagrange), "Im{P_GRV2026_lagrange(q2 = " + std::to_string(q2_val) + ")}" });
+                        results.add({ std::real(p_monomial), "Re{P_GRV2026_monomial(q2 = " + std::to_string(q2_val) + ")}" });
+                        results.add({ std::imag(p_monomial), "Im{P_GRV2026_monomial(q2 = " + std::to_string(q2_val) + ")}" });
                     }
-
-                    results.add({ std::real(p_lagrange), "Re{P_GRV2026_lagrange(q2=1.0)}" });
-                    results.add({ std::imag(p_lagrange), "Im{P_GRV2026_lagrange(q2=1.0)}" });
-                    results.add({ std::real(p_monomial), "Re{P_GRV2026_monomial(q2=1.0)}" });
-                    results.add({ std::imag(p_monomial), "Im{P_GRV2026_monomial(q2=1.0)}" });
-
 
                     return results;
                 }

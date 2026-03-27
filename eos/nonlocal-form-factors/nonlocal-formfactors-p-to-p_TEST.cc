@@ -203,8 +203,12 @@ class NonlocalFormFactorGRV2026Test :
                 static const std::vector<std::pair<double, double>> reference
                 {
                     /* outer functions */
-                    std::make_pair(  0.0, eps),             // Re{1/phi_+(q2 = 0.0)}
-                    std::make_pair(  0.0, eps),             // Im{1/phi_+(q2 = 0.0)}
+                    std::make_pair(  0.0, eps),             // Re{phi_+(q2 = 0.0)}
+                    std::make_pair(  0.0, eps),             // Im{phi_+(q2 = 0.0)}
+                    std::make_pair(  0.0,  eps),             // Re{phi_+(q2 = -4.0)}
+                    std::make_pair(  0.0,  eps),             // Im{phi_+(q2 = -4.0)}
+                    std::make_pair(  0.0,  eps),             // Re{phi_+(q2 = 7.0)}
+                    std::make_pair(  0.0,  eps),             // Im{phi_+(q2 = 7.0)}
                     std::make_pair(  0.0,  eps),             // Re{phi_+(q2 = 16.0)}
                     std::make_pair(  0.0,  eps),             // Im{phi_+(q2 = 16.0)}
                     std::make_pair(  0.0, eps),             // Re{P_GRV2026_lagrange(q2=1.0)}
