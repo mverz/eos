@@ -226,6 +226,13 @@ namespace eos
         public:
             /* b->s Wilson coefficients */
             virtual WilsonCoefficients<BToS> wilson_coefficients_b_to_s(const double & mu, const LeptonFlavor & lepton_flavor, const bool & cp_conjugate = false) const = 0;
+
+            /* b->s Wilson coefficients for a specific lepton flavor (only needed  for python interface) */
+            WilsonCoefficients<BToS>
+            wilson_coefficients_b_to_smumu(const double & mu, const bool & cp_conjugate = false) const
+            {
+                return wilson_coefficients_b_to_s(mu, LeptonFlavor::muon, cp_conjugate);
+            }
     };
 
     /*!
