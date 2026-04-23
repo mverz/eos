@@ -5995,13 +5995,20 @@ groups:
           unit:     'GeV^-2'
           latex:    '$\chi_{\mathrm{OPE}}$'
           comments: 'Dispersive bound in the OPE at t_s = -m_b^2'
-      'b->sccbar::chi_tilde_OPE@GRV2026' :
-          central: +0.000181
-          min:     +0.000179
-          max:     +0.000183
+      'b->sccbar::chi_tilde_OPE_V@GRV2026' :
+          central: +5.796e-5
+          min:     +5.796e-5
+          max:     +5.796e-5
           unit:     'GeV^-2'
           latex:    '$\Tilde{\chi}_{\mathrm{OPE}}$'
-          comments: 'To be determined!'
+          comments: 'Dispersive bound in the OPE at t_s = -m_b^2, vector part, with resonance factor'
+      'b->sccbar::chi_tilde_OPE_A@GRV2026' :
+          central: +5.268e-5
+          min:     +5.268e-5
+          max:     +5.268e-5
+          unit:     'GeV^-2'
+          latex:    '$\Tilde{\chi}_{\mathrm{OPE}}$'
+          comments: 'Dispersive bound in the OPE at t_s = -m_b^2, axial part, with resonance factor'
       'b->sccbar::bound@GvDV2020' :
           central: +1.0
           min:     +1.0

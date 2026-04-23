@@ -203,18 +203,15 @@ class NonlocalFormFactorGRV2026Test :
                 static const std::vector<std::pair<double, double>> reference
                 {
                     /* outer functions */
-                    std::make_pair(  0.0, eps),             // Re{phi_+(q2 = 0.0)}
+                    std::make_pair(  5.14673, eps),             // Re{phi_+(q2 = 0.0)}
                     std::make_pair(  0.0, eps),             // Im{phi_+(q2 = 0.0)}
-                    std::make_pair(  0.0,  eps),             // Re{phi_+(q2 = -4.0)}
+                    std::make_pair(  5.43688,  eps),             // Re{phi_+(q2 = -4.0)}
                     std::make_pair(  0.0,  eps),             // Im{phi_+(q2 = -4.0)}
-                    std::make_pair(  0.0,  eps),             // Re{phi_+(q2 = 7.0)}
+                    std::make_pair(  6.58341,  eps),             // Re{phi_+(q2 = 7.0)}
                     std::make_pair(  0.0,  eps),             // Im{phi_+(q2 = 7.0)}
-                    std::make_pair(  0.0,  eps),             // Re{phi_+(q2 = 16.0)}
-                    std::make_pair(  0.0,  eps),             // Im{phi_+(q2 = 16.0)}
-                    std::make_pair(  0.0, eps),             // Re{P_GRV2026_lagrange(q2=1.0)}
-                    std::make_pair(  0.0, eps),             // Im{P_GRV2026_lagrange(q2=1.0)}
-                    std::make_pair(  0.0,  eps),            // Re{P_GRV2026_monomial(q2=1.0)}
-                    std::make_pair(  0.0,   eps),            // Im{P_GRV2026_monomial(q2=1.0)}
+                    std::make_pair(  1.67205,  eps),             // Re{phi_+(q2 = 16.0)}
+                    std::make_pair(  25.5052,  eps),             // Im{phi_+(q2 = 16.0)}
+
                 };
                 TEST_CHECK_DIAGNOSTICS(diagnostics, reference);
 

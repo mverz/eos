@@ -1442,7 +1442,7 @@ namespace eos
         complex<double> result;
 
         // LO contribution cf. [AGV:2019A] p. 31
-        result += wc.c1() * agv_2019a::f190(clp) + wc.c2() * agv_2019a::f290(clp);
+        result += wc.c1() * agv_2019a::f190(clp) + ( wc.c2() + 6.0 * wc.c3() + 60.0 * wc.c5() ) * agv_2019a::f290(clp);
 
         if (use_nlo)
         {
