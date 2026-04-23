@@ -539,7 +539,12 @@ BOOST_PYTHON_MODULE(_eos)
             .def("__eq__", &Unit::operator==);
 
     // WilsonCoefficients
-    class_<WilsonCoefficients<eos::BToS>>("BToSWilsonCoefficients", no_init).def("c1", &WilsonCoefficients<eos::BToS>::c1).def("c2", &WilsonCoefficients<eos::BToS>::c2);
+        class_<WilsonCoefficients<eos::BToS>>("BToSWilsonCoefficients", no_init)
+            .def("c1", &WilsonCoefficients<eos::BToS>::c1)
+            .def("c2", &WilsonCoefficients<eos::BToS>::c2)
+            .def("c7", &WilsonCoefficients<eos::BToS>::c7)
+            .def("c9", &WilsonCoefficients<eos::BToS>::c9)
+            .def("c10", &WilsonCoefficients<eos::BToS>::c10);
 
     // Model
     register_ptr_to_python<std::shared_ptr<Model>>();
@@ -570,6 +575,7 @@ BOOST_PYTHON_MODULE(_eos)
             .def("m_ud_msbar", &Model::m_ud_msbar)
             // WilsonCoefficients
             .def("wilson_coefficients_b_to_s", &Model::wilson_coefficients_b_to_s)
+            .def("wilson_coefficients_b_to_smumu", &Model::wilson_coefficients_b_to_smumu)
             // alpha_s
             .def("alpha_s", &Model::alpha_s);
 
