@@ -910,6 +910,22 @@ namespace eos
                 {
                     Diagnostics results;
 
+                    const std::array<unsigned, 4> phi_parameters = {3, 3, 2, 2};
+
+                    results.add({ this->t_s(), "t_s" });
+                    results.add({ real(this->phi(-7.0, phi_parameters)), "Re{phi_+(q2 = -7.0)}" });
+                    results.add({ imag(this->phi(-7.0, phi_parameters)), "Im{phi_+(q2 = -7.0)}" });
+                    results.add({ real(this->phi(-1.0, phi_parameters)), "Re{phi_+(q2 = -1.0)}" });
+                    results.add({ imag(this->phi(-1.0, phi_parameters)), "Im{phi_+(q2 = -1.0)}" });
+                    results.add({ real(this->phi(5.0, phi_parameters)), "Re{phi_+(q2 = 5.0)}" });
+                    results.add({ imag(this->phi(5.0, phi_parameters)), "Im{phi_+(q2 = 5.0)}" });
+                    results.add({ real(this->phi(16.0, phi_parameters)), "Re{phi_+(q2 = 16.0)}" });
+                    results.add({ imag(this->phi(16.0, phi_parameters)), "Im{phi_+(q2 = 16.0)}" });
+                    results.add({ real(this->phi(25.0, phi_parameters)), "Re{phi_+(q2 = 25.0)}" });
+                    results.add({ imag(this->phi(25.0, phi_parameters)), "Im{phi_+(q2 = 25.0)}" });
+                    results.add({ real(this->phi(35.0, phi_parameters)), "Re{phi_+(q2 = 35.0)}" });
+                    results.add({ imag(this->phi(35.0, phi_parameters)), "Im{phi_+(q2 = 35.0)}" });
+
                     return results;
                 }
         };
@@ -1011,6 +1027,7 @@ namespace eos
 
                     // The parameters of the polynomial expension are computed using t0 = 4.0 and
                     // the masses are set to mB = 5.279 and mK = 0.492 (same values as for local form-factors)
+                    // const SzegoPolynomial<interpolation_order> orthonormal_polynomials;
                     orthonormal_polynomials(SzegoPolynomial<interpolation_order>::FlatMeasure(2.48247))
                 {
                     this->uses(*form_factors);
@@ -1380,7 +1397,7 @@ namespace eos
                 // Subtraction point for the dispersion relation...
                 UsedParameter t_s;
                 // ...and value of the dispersion bound at that point in the OPE
-                UsedParameter chiOPE;
+                UsedParameter chiOPE_V;
                 UsedParameter bound;
                 UsedParameter bound_uncertainty;
 
@@ -1388,8 +1405,8 @@ namespace eos
                 const static unsigned interpolation_order = 5;
                 const LagrangePolynomial<interpolation_order> lagrange;
 
-                // Orthogonal polynomials on an arc of the unit circle used for the computation of dispersive bounds [NOT USED MIGHT DELETE]
-                // const SzegoPolynomial<interpolation_order> orthonormal_polynomials;
+                // Orthogonal polynomials on an arc of the unit circle used for the computation of dispersive bounds
+                const SzegoPolynomial<interpolation_order> orthonormal_polynomials;
 
                 GRV2026(const Parameters & p, const Options & o) :
                     form_factors(FormFactorFactory<PToP>::create(stringify(Process_::label) + "::" + o.get("form-factors"_ok, "BSZ2015"), p)),
@@ -1420,7 +1437,7 @@ namespace eos
                     t_0(p["b->sccbar::t_0"], *this),
 
                     t_s(p["b->sccbar::t_s"], *this),
-                    chiOPE(p["b->sccbar::chi_tilde_OPE_V@GRV2026"], *this),
+                    chiOPE_V(p["b->sccbar::chi_tilde_OPE_V@GRV2026"], *this),
                     bound(p["b->sccbar::bound@GvDV2020"], *this),
                     bound_uncertainty(p["b->sccbar::bound_uncertainty@GvDV2020"], *this),
 
@@ -1429,23 +1446,25 @@ namespace eos
                               eos::nff_utils::z(-3.0, 4.0 * power_of<2>(m_D0), t_0()),
                               eos::nff_utils::z(-1.0, 4.0 * power_of<2>(m_D0), t_0()),
                               eos::nff_utils::z(power_of<2>(m_Jpsi),  4.0 * power_of<2>(m_D0), t_0()),
-                              eos::nff_utils::z(power_of<2>(m_psi2S), 4.0 * power_of<2>(m_D0), t_0())})
+                              eos::nff_utils::z(power_of<2>(m_psi2S), 4.0 * power_of<2>(m_D0), t_0())}),
 
                     // The parameters of the polynomial expension are computed using t0 = 4.0 and
                     // the masses are set to mB = 5.279 and mK = 0.492 (same values as for local form-factors)
+                    // const SzegoPolynomial<interpolation_order> orthonormal_polynomials;
+                    orthonormal_polynomials(SzegoPolynomial<interpolation_order>::FlatMeasure(M_PI))
                 {
                     this->uses(*form_factors);
                 }
 
                 ~GRV2026() = default;
 
-                inline complex<double> phi(const complex<double> & q2, const std::array<unsigned, 6> & phi_parameters, const std::vector<double> & Mres) const
+                inline complex<double> phi(const complex<double> & q2, const std::array<unsigned, 7> & phi_parameters, const std::vector<double> & Mres) const
                 {
-                    // Values of a, b, c and d depends on the form factor:
-                    // FF                        a    b    c    d
-                    // 0(P->P) aka plus          3    3    4    3
-                    // perp(P->V) = par(P->V)    1    1    3    3
-                    // 0(P->V) aka long          1    1    4    3
+                    // Values of a, b, c, d, e depends on the form factor:
+                    // FF                        a    b    c    d    e
+                    // 0(P->P) aka plus          3    3    4    3    1
+                    // perp(P->V) = par(P->V)    1    1    3    3    0
+                    // 0(P->V) aka long          1    1    4    3    1
                     //
                     // K is 3/(16pi^4) * 1/MB^k, where
                     // 0(P->P) aka plus          k = 4
@@ -1461,19 +1480,18 @@ namespace eos
                     const double m_D02 = power_of<2>(m_D0), m_D04 = power_of<4>(m_D0);
                     const double s_0   = this->t_0();
                     const auto   z     = eos::nff_utils::z(q2, 4.0 * m_D02, s_0);
-                    const double Q2    = this->t_s();
-                    const double chi   = this->chiOPE();
+                    const double Q2    = -1.0 * this->t_s();
+                    const double chi   = this->chiOPE_V();
 
                     const double sG    = 4.0 * m_D02;             // s_Gamma
                     const double sp = power_of<2>(m_B + m_P);     // s_+
                     const double sm = power_of<2>(m_B - m_P);     // s_-
 
-                    const double a = phi_parameters[0], b = phi_parameters[1], c = phi_parameters[2], d = phi_parameters[3], k = phi_parameters[4], n_I = phi_parameters[5];
+                    const double a = phi_parameters[0], b = phi_parameters[1], c = phi_parameters[2], d = phi_parameters[3], e = phi_parameters[4], k = phi_parameters[5], n_I = phi_parameters[6];
                     const double K = 3/(16 * pow(M_PI, 4)) * 1/pow(m_B, k);
 
                     const complex<double> sqrt_sG_s   = std::sqrt(complex<double>(sG - s));
                     const complex<double> sqrt_sG_s0  = std::sqrt(complex<double>(sG - s_0));
-                    const complex<double> sqrt_sG_sm  = std::sqrt(complex<double>(- sG + sm));
                     const complex<double> sqrt_sG     = std::sqrt(complex<double>(sG));
                     const complex<double> sqrt_sG_Q2  = std::sqrt(complex<double>(sG + Q2));
 
@@ -1481,9 +1499,8 @@ namespace eos
 
                     const complex<double> factor_1 = std::pow(complex<double>(sG - q2) / complex<double>(sG - s_0), 0.25) * (sqrt_sG_s + sqrt_sG_s0);
                     const complex<double> factor_a = std::pow(complex<double>(sp - q2), 0.25 * a);
-                    //const complex<double> factor_b = std::pow(sqrt_sG_s + sqrt_sG_sm, 0.5 * b);
                     const complex<double> factor_b = std::pow(complex<double>(sm - q2), 0.25 * b);
-                    const complex<double> factor_c = std::pow(sqrt_sG_s + sqrt_sG, -(c + 3.0));
+                    const complex<double> factor_ce = std::pow(sqrt_sG_s + sqrt_sG, -(c - 2*e + 3.0)) * std::pow(s, -e);
                     const complex<double> factor_d = std::pow((sqrt_sG_s + sqrt_sG) / (sqrt_sG_s + sqrt_sG_Q2), d);
 
                     complex<double> factor_Mres = 1.0;
@@ -1495,10 +1512,10 @@ namespace eos
                             factor_Mres *= (Mres2 - s) / power_of<2>(sqrt_sG_s + sqrt_sG_Q2);
                     }
 
-                    return norm * factor_1 * factor_a * factor_b * factor_c * factor_d * factor_Mres;
+                    return norm * factor_1 * factor_a * factor_b * factor_ce * factor_d * factor_Mres;
                 }
 
-                inline complex<double> phi(const double & q2, const std::array<unsigned, 6> & phi_parameters, const std::vector<double> & Mres) const
+                inline complex<double> phi(const double & q2, const std::array<unsigned, 7> & phi_parameters, const std::vector<double> & Mres) const
                 {
                     if (q2 < 4.0 * power_of<2>(m_D0))
                     {
@@ -1537,16 +1554,49 @@ namespace eos
                     return std::make_pair(C_real, C_imag);
                 }
 
+                inline std::pair<gsl_vector *, gsl_vector *> orthonormal_coefficients_old() const
+                {
+                    const std::array<complex<double>, interpolation_order + 1> interpolation_values{
+                        complex<double>(re_at_m7_plus, im_at_m7_plus),
+                        complex<double>(re_at_m5_plus, im_at_m5_plus),
+                        complex<double>(re_at_m3_plus, im_at_m3_plus),
+                        complex<double>(re_at_m1_plus, im_at_m1_plus),
+                        polar<double>(abs_at_Jpsi_plus, arg_at_Jpsi_plus),
+                        polar<double>(abs_at_psi2S_plus, arg_at_psi2S_plus)
+                    };
+
+                    std::array<complex<double>, interpolation_order + 1> L_coeffs = lagrange.get_coefficients(interpolation_values);
+
+                    // Split array of coefficients to real and imaginary parts
+                    gsl_vector * L_coeffs_real_part = gsl_vector_calloc(interpolation_order + 1);
+                    gsl_vector * L_coeffs_imag_part = gsl_vector_calloc(interpolation_order + 1);
+
+                    for (unsigned i = 0; i <= interpolation_order; ++i)
+                    {
+                        gsl_vector_set(L_coeffs_real_part, i, real(L_coeffs[i]));
+                        gsl_vector_set(L_coeffs_imag_part, i, imag(L_coeffs[i]));
+                    }
+
+                    const gsl_matrix * coefficient_matrix = orthonormal_polynomials.coefficient_matrix();
+
+                    // Solve the system by computing (coefficient_matrix)^(-1) . L_coeffs_real_part and idem for imag
+                    gsl_blas_dtrsv(CblasUpper, CblasNoTrans, CblasNonUnit, coefficient_matrix, L_coeffs_real_part);
+                    gsl_blas_dtrsv(CblasUpper, CblasNoTrans, CblasNonUnit, coefficient_matrix, L_coeffs_imag_part);
+
+                    return std::make_pair(L_coeffs_real_part, L_coeffs_imag_part);
+                }
+
                 virtual complex<double> get_orthonormal_coefficients(const unsigned & i) const
                 {
                     auto coefficients = orthonormal_coefficients();
+                    // auto coefficients = orthonormal_coefficients_old();
 
                     return complex<double>(gsl_vector_get(coefficients.first,  i),
                                            gsl_vector_get(coefficients.second, i));
                 }
 
                 // Residue of H at s = m_Jpsi2 computed as the residue wrt z -z_Jpsi divided by dz/ds evaluated at s = m_Jpsi2
-                inline complex<double> H_residue_jpsi(const std::array<unsigned, 6> & phi_parameters, const std::vector<double> & Mres, const std::array<complex<double>, interpolation_order + 1> & interpolation_values) const
+                inline complex<double> H_residue_jpsi(const std::array<unsigned, 7> & phi_parameters, const std::vector<double> & Mres, const std::array<complex<double>, interpolation_order + 1> & interpolation_values) const
                 {
                     const double m_Jpsi2  = power_of<2>(m_Jpsi);
                     const double m_psi2S2 = power_of<2>(m_psi2S);
@@ -1565,7 +1615,7 @@ namespace eos
                 }
 
                 // Residue of H at s = m_psi2S2 computed as the residue wrt z -z_psi2S divided by dz/ds evaluated at s = m_psi2S2
-                inline complex<double> H_residue_psi2s(const std::array<unsigned, 6> & phi_parameters, const std::vector<double> & Mres, const std::array<complex<double>, interpolation_order + 1> & interpolation_values) const
+                inline complex<double> H_residue_psi2s(const std::array<unsigned, 7> & phi_parameters, const std::vector<double> & Mres, const std::array<complex<double>, interpolation_order + 1> & interpolation_values) const
                 {
                     const double m_Jpsi2  = power_of<2>(m_Jpsi);
                     const double m_psi2S2 = power_of<2>(m_psi2S);
@@ -1603,7 +1653,7 @@ namespace eos
                     const complex<double> blaschke_factor = eos::nff_utils::blaschke_cc(z, z_Jpsi, z_psi2S);
 
                     // For B to K 
-                    const std::array<unsigned, 6> phi_parameters = {3, 3, 4, 3, 4, 2};
+                    const std::array<unsigned, 7> phi_parameters = {3, 3, 4, 3, 1, 4, 2};
                     const std::vector<double> Mres = {m_Bs_star};
 
                     const complex<double> p_at_z = lagrange(interpolation_values, z);
@@ -1646,7 +1696,7 @@ namespace eos
                     };
 
                     // For B to K 
-                    const std::array<unsigned, 6> phi_parameters = {3, 3, 4, 3, 4, 2};
+                    const std::array<unsigned, 7> phi_parameters = {3, 3, 4, 3, 1, 4, 2};
                     const std::vector<double> Mres = {m_Bs_star};
 
                     return H_residue_jpsi(phi_parameters, Mres, interpolation_values);
@@ -1664,7 +1714,7 @@ namespace eos
                     };
 
                     // For B to K 
-                    const std::array<unsigned, 6> phi_parameters = {3, 3, 4, 3, 4, 2};
+                    const std::array<unsigned, 7> phi_parameters = {3, 3, 4, 3, 1, 4, 2};
                     const std::vector<double> Mres = {m_Bs_star};
 
                     return H_residue_psi2s(phi_parameters, Mres, interpolation_values);
@@ -1700,6 +1750,7 @@ namespace eos
                 virtual double weak_bound() const
                 {
                     auto coefficients = orthonormal_coefficients();
+                    // auto coefficients = orthonormal_coefficients_old();
 
                     double largest_absolute_coeff = 0.0, coeff;
 
@@ -1719,6 +1770,7 @@ namespace eos
                 virtual double strong_bound() const
                 {
                     auto coefficients = orthonormal_coefficients();
+                    // auto coefficients = orthonormal_coefficients_old();
 
                     double coefficient_sum = 0.0;
 
@@ -1771,18 +1823,23 @@ namespace eos
                     // 1) OUTER FUNCTION
 
                     // For B to K
-                    const std::array<unsigned, 6> phi_parameters = {3, 3, 4, 3, 4, 2};
+                    const std::array<unsigned, 7> phi_parameters = {3, 3, 4, 3, 1, 4, 2};
                     const std::vector<double> Mres = {m_Bs_star};
                     
-                    
-                    results.add({ real(this->phi(-4.0, phi_parameters, Mres)), "Re{phi_+(q2 = -4.0)}" });
-                    results.add({ imag(this->phi(-4.0, phi_parameters, Mres)), "Im{phi_+(q2 = -4.0)}" });
-                    results.add({ real(this->phi(0.0, phi_parameters, Mres)), "Re{phi_+(q2 = 0.0)}" });
-                    results.add({ imag(this->phi(0.0, phi_parameters, Mres)), "Im{phi_+(q2 = 0.0)}" });
-                    results.add({ real(this->phi(7.0, phi_parameters, Mres)), "Re{phi_+(q2 = 7.0)}" });
-                    results.add({ imag(this->phi(7.0, phi_parameters, Mres)), "Im{phi_+(q2 = 7.0)}" });
+                    results.add({ this->t_s(), "t_s" });
+                    results.add({ real(this->phi(-7.0, phi_parameters, Mres)), "Re{phi_+(q2 = -7.0)}" });
+                    results.add({ imag(this->phi(-7.0, phi_parameters, Mres)), "Im{phi_+(q2 = -7.0)}" });
+                    results.add({ real(this->phi(-1.0, phi_parameters, Mres)), "Re{phi_+(q2 = -1.0)}" });
+                    results.add({ imag(this->phi(-1.0, phi_parameters, Mres)), "Im{phi_+(q2 = -1.0)}" });
+                    results.add({ real(this->phi(5.0, phi_parameters, Mres)), "Re{phi_+(q2 = 5.0)}" });
+                    results.add({ imag(this->phi(5.0, phi_parameters, Mres)), "Im{phi_+(q2 = 5.0)}" });
                     results.add({ real(this->phi(16.0, phi_parameters, Mres)), "Re{phi_+(q2 = 16.0)}" });
                     results.add({ imag(this->phi(16.0, phi_parameters, Mres)), "Im{phi_+(q2 = 16.0)}" });
+                    results.add({ real(this->phi(25.0, phi_parameters, Mres)), "Re{phi_+(q2 = 25.0)}" });
+                    results.add({ imag(this->phi(25.0, phi_parameters, Mres)), "Im{phi_+(q2 = 25.0)}" });
+                    results.add({ real(this->phi(35.0, phi_parameters, Mres)), "Re{phi_+(q2 = 35.0)}" });
+                    results.add({ imag(this->phi(35.0, phi_parameters, Mres)), "Im{phi_+(q2 = 35.0)}" });
+
 
 
 
@@ -1841,9 +1898,19 @@ namespace eos
                         // results.add({ std::imag(Hhat_plus(q2)), "Im{Hhat_+(q2 = " + std::to_string(q2) + ")}" });
                     }
 
+                    // 4) BOUNDS
+
+                    results.add({ weak_bound(), "GRV2026 weak bound" });
+                    results.add({ strong_bound(), "GRV2026 strong bound" });
+
                     return results;
                 }
         };
+
+
+
+        
+
 
     }
 
