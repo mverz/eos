@@ -78,7 +78,7 @@ namespace eos
             m_B(p["mass::B_" + opt_q.str()], u),
             tau_B(p["life_time::B_" + opt_q.str()], u),
             m_K(p["mass::K_" + opt_q.str()], u),
-            opt_nonlocal_formfactor(o, "nonlocal-formfactor"_ok, { "GvDV2020"_ov, "naive"_ov, "GRvDV2022order5"_ov, "GRvDV2022order6"_ov }, "GvDV2020"_ov),
+            opt_nonlocal_formfactor(o, "nonlocal-formfactor"_ok, { "GvDV2020"_ov, "naive"_ov, "GRvDV2022order5"_ov, "GRvDV2022order6"_ov, "GRV2026"_ov }, "GvDV2020"_ov),
             nonlocal_formfactor(NonlocalFormFactor<PToP>::make("B->K::" + opt_nonlocal_formfactor.value(), p, o)),
             opt_psi(o, "psi"_ok, { "J/psi"_ov, "psi(2S)"_ov }, "J/psi"_ov),
             m_psi(p["mass::" + opt_psi.value()], u),
