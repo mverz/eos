@@ -1642,6 +1642,820 @@ namespace eos
                     return results;
                 }
         };
+
+        /*
+         * Parametrize...
+         */
+        template <typename Process_>
+        class GRV2026 :
+            public NonlocalFormFactor<PToV>
+        {
+            private:
+                std::shared_ptr<FormFactors<PToV>> form_factors;
+
+                // spectator quark option
+                SwitchOption opt_q;
+
+                //Polynomial expansion parameters
+                UsedParameter re_at_m7_perp;
+                UsedParameter im_at_m7_perp;
+                UsedParameter re_at_m5_perp;
+                UsedParameter im_at_m5_perp;
+                UsedParameter re_at_m3_perp;
+                UsedParameter im_at_m3_perp;
+                UsedParameter re_at_m1_perp;
+                UsedParameter im_at_m1_perp;
+                UsedParameter abs_at_Jpsi_perp;
+                UsedParameter arg_at_Jpsi_perp_minus_long;
+                UsedParameter abs_at_psi2S_perp;
+                UsedParameter arg_at_psi2S_perp_minus_long;
+
+                UsedParameter re_at_m7_para;
+                UsedParameter im_at_m7_para;
+                UsedParameter re_at_m5_para;
+                UsedParameter im_at_m5_para;
+                UsedParameter re_at_m3_para;
+                UsedParameter im_at_m3_para;
+                UsedParameter re_at_m1_para;
+                UsedParameter im_at_m1_para;
+                UsedParameter abs_at_Jpsi_para;
+                UsedParameter arg_at_Jpsi_para_minus_long;
+                UsedParameter abs_at_psi2S_para;
+                UsedParameter arg_at_psi2S_para_minus_long;
+
+                UsedParameter re_at_m7_long;
+                UsedParameter im_at_m7_long;
+                UsedParameter re_at_m5_long;
+                UsedParameter im_at_m5_long;
+                UsedParameter re_at_m3_long;
+                UsedParameter im_at_m3_long;
+                UsedParameter re_at_m1_long;
+                UsedParameter im_at_m1_long;
+                UsedParameter abs_at_Jpsi_long;
+                UsedParameter arg_at_Jpsi_long;
+                UsedParameter abs_at_psi2S_long;
+                UsedParameter arg_at_psi2S_long;
+
+                //Charmonium masses
+                UsedParameter m_Jpsi;
+                UsedParameter m_psi2S;
+
+                // B-meson parameters
+                UsedParameter m_B;
+                UsedParameter m_Bs;
+                UsedParameter m_Bs_star;
+                UsedParameter m_Bs1;
+
+                // final state meson parameters
+                UsedParameter m_V;
+
+                UsedParameter m_D0;
+                UsedParameter t_0;
+
+                // Subtraction point for the dispersion relation...
+                UsedParameter t_s;
+                // ...and value of the dispersion bound at that point in the OPE
+                UsedParameter chiOPE_V;
+                UsedParameter chiOPE_A;
+                UsedParameter bound;
+                UsedParameter bound_uncertainty;
+
+                // Lagrange interpolating polynomial
+                const static unsigned interpolation_order = 5;
+                const LagrangePolynomial<interpolation_order> lagrange;
+
+
+                std::string _final_state() const
+                {
+                    switch (opt_q.value()[0])
+                    {
+                        case 's':
+                            return "phi";
+                            break;
+
+                        default:
+                            return "K_d^*";
+                    }
+                }
+
+            public:
+                GRV2026(const Parameters & p, const Options & o) :
+                    form_factors(FormFactorFactory<PToV>::create(stringify(Process_::label) + "::" + o.get("form-factors"_ok, "BSZ2015"), p)),
+                    opt_q(o, "q"_ok, { "u", "d", "s" }),
+
+                    re_at_m7_perp(p[stringify(Process_::label) + "ccbar::Re_Hhat_at_m7_perp@GRvDV2022"], *this),
+                    im_at_m7_perp(p[stringify(Process_::label) + "ccbar::Im_Hhat_at_m7_perp@GRvDV2022"], *this),
+                    re_at_m5_perp(p[stringify(Process_::label) + "ccbar::Re_Hhat_at_m5_perp@GRvDV2022"], *this),
+                    im_at_m5_perp(p[stringify(Process_::label) + "ccbar::Im_Hhat_at_m5_perp@GRvDV2022"], *this),
+                    re_at_m3_perp(p[stringify(Process_::label) + "ccbar::Re_Hhat_at_m3_perp@GRvDV2022"], *this),
+                    im_at_m3_perp(p[stringify(Process_::label) + "ccbar::Im_Hhat_at_m3_perp@GRvDV2022"], *this),
+                    re_at_m1_perp(p[stringify(Process_::label) + "ccbar::Re_Hhat_at_m1_perp@GRvDV2022"], *this),
+                    im_at_m1_perp(p[stringify(Process_::label) + "ccbar::Im_Hhat_at_m1_perp@GRvDV2022"], *this),
+                    abs_at_Jpsi_perp(p[stringify(Process_::label) + "ccbar::Abs_Hhat_at_Jpsi_perp@GRvDV2022"], *this),
+                    arg_at_Jpsi_perp_minus_long(p[stringify(Process_::label) + "ccbar::Arg_Hhat_at_Jpsi_perp_minus_long@GRvDV2022"], *this),
+                    abs_at_psi2S_perp(p[stringify(Process_::label) + "ccbar::Abs_Hhat_at_psi2S_perp@GRvDV2022"], *this),
+                    arg_at_psi2S_perp_minus_long(p[stringify(Process_::label) + "ccbar::Arg_Hhat_at_psi2S_perp_minus_long@GRvDV2022"], *this),
+
+                    re_at_m7_para(p[stringify(Process_::label) + "ccbar::Re_Hhat_at_m7_para@GRvDV2022"], *this),
+                    im_at_m7_para(p[stringify(Process_::label) + "ccbar::Im_Hhat_at_m7_para@GRvDV2022"], *this),
+                    re_at_m5_para(p[stringify(Process_::label) + "ccbar::Re_Hhat_at_m5_para@GRvDV2022"], *this),
+                    im_at_m5_para(p[stringify(Process_::label) + "ccbar::Im_Hhat_at_m5_para@GRvDV2022"], *this),
+                    re_at_m3_para(p[stringify(Process_::label) + "ccbar::Re_Hhat_at_m3_para@GRvDV2022"], *this),
+                    im_at_m3_para(p[stringify(Process_::label) + "ccbar::Im_Hhat_at_m3_para@GRvDV2022"], *this),
+                    re_at_m1_para(p[stringify(Process_::label) + "ccbar::Re_Hhat_at_m1_para@GRvDV2022"], *this),
+                    im_at_m1_para(p[stringify(Process_::label) + "ccbar::Im_Hhat_at_m1_para@GRvDV2022"], *this),
+                    abs_at_Jpsi_para(p[stringify(Process_::label) + "ccbar::Abs_Hhat_at_Jpsi_para@GRvDV2022"], *this),
+                    arg_at_Jpsi_para_minus_long(p[stringify(Process_::label) + "ccbar::Arg_Hhat_at_Jpsi_para_minus_long@GRvDV2022"], *this),
+                    abs_at_psi2S_para(p[stringify(Process_::label) + "ccbar::Abs_Hhat_at_psi2S_para@GRvDV2022"], *this),
+                    arg_at_psi2S_para_minus_long(p[stringify(Process_::label) + "ccbar::Arg_Hhat_at_psi2S_para_minus_long@GRvDV2022"], *this),
+
+                    re_at_m7_long(p[stringify(Process_::label) + "ccbar::Re_Hhat_at_m7_long@GRvDV2022"], *this),
+                    im_at_m7_long(p[stringify(Process_::label) + "ccbar::Im_Hhat_at_m7_long@GRvDV2022"], *this),
+                    re_at_m5_long(p[stringify(Process_::label) + "ccbar::Re_Hhat_at_m5_long@GRvDV2022"], *this),
+                    im_at_m5_long(p[stringify(Process_::label) + "ccbar::Im_Hhat_at_m5_long@GRvDV2022"], *this),
+                    re_at_m3_long(p[stringify(Process_::label) + "ccbar::Re_Hhat_at_m3_long@GRvDV2022"], *this),
+                    im_at_m3_long(p[stringify(Process_::label) + "ccbar::Im_Hhat_at_m3_long@GRvDV2022"], *this),
+                    re_at_m1_long(p[stringify(Process_::label) + "ccbar::Re_Hhat_at_m1_long@GRvDV2022"], *this),
+                    im_at_m1_long(p[stringify(Process_::label) + "ccbar::Im_Hhat_at_m1_long@GRvDV2022"], *this),
+                    abs_at_Jpsi_long(p[stringify(Process_::label) + "ccbar::Abs_Hhat_at_Jpsi_long@GRvDV2022"], *this),
+                    arg_at_Jpsi_long(p[stringify(Process_::label) + "ccbar::Arg_Hhat_at_Jpsi_long@GRvDV2022"], *this),
+                    abs_at_psi2S_long(p[stringify(Process_::label) + "ccbar::Abs_Hhat_at_psi2S_long@GRvDV2022"], *this),
+                    arg_at_psi2S_long(p[stringify(Process_::label) + "ccbar::Arg_Hhat_at_psi2S_long@GRvDV2022"], *this),
+
+                    m_Jpsi(p["mass::J/psi"], *this),
+                    m_psi2S(p["mass::psi(2S)"], *this),
+
+                    m_B(p["mass::B_" + opt_q.value()], *this),
+
+                    m_V(p["mass::" + _final_state()], *this),
+
+                    m_Bs(p["mass::B_s"], *this),
+                    m_Bs_star(p["mass::B_s^*"], *this),
+                    m_Bs1(p["mass::B_s,1"], *this),
+
+                    m_D0(p["mass::D^0"], *this),
+                    t_0(p["b->sccbar::t_0"], *this),
+
+                    t_s(p["b->sccbar::t_s"], *this),
+
+                    chiOPE_V(p["b->sccbar::chi_tilde_OPE_V@GRV2026"], *this),
+                    chiOPE_A(p["b->sccbar::chi_tilde_OPE_A@GRV2026"], *this),
+                    bound(p["b->sccbar::bound@GvDV2020"], *this),
+                    bound_uncertainty(p["b->sccbar::bound_uncertainty@GvDV2020"], *this),
+
+                    lagrange({eos::nff_utils::z(-7.0, 4.0 * power_of<2>(m_D0), t_0()),
+                              eos::nff_utils::z(-5.0, 4.0 * power_of<2>(m_D0), t_0()),
+                              eos::nff_utils::z(-3.0, 4.0 * power_of<2>(m_D0), t_0()),
+                              eos::nff_utils::z(-1.0, 4.0 * power_of<2>(m_D0), t_0()),
+                              eos::nff_utils::z(power_of<2>(m_Jpsi),  4.0 * power_of<2>(m_D0), t_0()),
+                              eos::nff_utils::z(power_of<2>(m_psi2S), 4.0 * power_of<2>(m_D0), t_0())})
+
+                    // The parameters of the polynomial expension are computed using t0 = 4.0 and
+                    // the masses are set to mB(s) = 5.279 (5.366) and mKst(phi) = 0.896 (1.02) (same values as for local form-factors)
+                {
+                    this->uses(*form_factors);
+                }
+
+                ~GRV2026() = default;
+
+                enum class OPECurrent
+                {
+                    V,
+                    A
+                };
+
+                inline complex<double> phi(const complex<double> & q2, const std::array<unsigned, 6> & phi_parameters, const std::vector<double> & Mres, const OPECurrent & current) const
+                {
+                    // Values of a, b, c, d, e depends on the form factor:
+                    // FF                        a    b    c    d    e
+                    // 0(P->P) aka plus          3    3    4    3    1
+                    // perp(P->V) = par(P->V)    1    1    3    3    0
+                    // 0(P->V) aka long          1    1    4    3    1
+                    //
+                    // K is 3/(16pi^4) * 1/MB^k, where
+                    // 0(P->P) aka plus          k = 4
+                    // perp(P->V) = par(P->V)    k = 6
+                    // 0(P->V) aka long          k = 8
+                    //
+                    // n_I = 2 for B to K(*), n_I = 1 for Bs to phi
+
+                    const complex<double> s = q2;
+
+                    const double m_V2  = power_of<2>(m_V);
+                    const double m_B2  = power_of<2>(m_B),  m_B4 =  power_of<4>(m_B);
+                    const double m_D02 = power_of<2>(m_D0), m_D04 = power_of<4>(m_D0);
+                    const double s_0   = this->t_0();
+                    const auto   z     = eos::nff_utils::z(q2, 4.0 * m_D02, s_0);
+                    const double Q2    = -1.0 * this->t_s();
+                    const double chi   = (OPECurrent::V == current) ? this->chiOPE_V() : this->chiOPE_A();
+
+                    const double sG    = 4.0 * m_D02;             // s_Gamma
+                    const double sp = power_of<2>(m_B + m_V);     // s_+
+                    const double sm = power_of<2>(m_B - m_V);     // s_-
+
+                    const double a = phi_parameters[0], b = phi_parameters[1], c = phi_parameters[2], d = phi_parameters[3], e = phi_parameters[4], k = phi_parameters[5];
+                    const double K = 3/(16 * pow(M_PI, 4)) * 1/pow(m_B, k);
+
+                    const complex<double> sqrt_sG_s   = std::sqrt(complex<double>(sG - s));
+                    const complex<double> sqrt_sG_s0  = std::sqrt(complex<double>(sG - s_0));
+                    const complex<double> sqrt_sG     = std::sqrt(complex<double>(sG));
+                    const complex<double> sqrt_sG_Q2  = std::sqrt(complex<double>(sG + Q2));
+
+                    const double norm = std::sqrt(1.0 / (K * M_PI * chi));
+
+                    const complex<double> factor_1 = std::pow(complex<double>(sG - q2) / complex<double>(sG - s_0), 0.25) * (sqrt_sG_s + sqrt_sG_s0);
+                    const complex<double> factor_a = std::pow(complex<double>(sp - q2), 0.25 * a);
+                    const complex<double> factor_b = std::pow(complex<double>(sm - q2), 0.25 * b);
+                    const complex<double> factor_ce = std::pow(sqrt_sG_s + sqrt_sG, -(c - 2*e + 3.0)) * std::pow(s, -e);
+                    const complex<double> factor_d = std::pow((sqrt_sG_s + sqrt_sG) / (sqrt_sG_s + sqrt_sG_Q2), d);
+
+                    complex<double> factor_Mres = 1.0;
+                    for (const auto & m : Mres)
+                    {
+                        const double Mres2 = power_of<2>(m);
+                        const bool include_factor_Mres = (Mres2 > sG) && (Mres2 < sp);
+                        if (include_factor_Mres)
+                            factor_Mres *= (Mres2 - s) / power_of<2>(sqrt_sG_s + sqrt_sG_Q2);
+                    }
+
+                    return norm * factor_1 * factor_a * factor_b * factor_ce * factor_d * factor_Mres;
+                }
+
+                inline complex<double> phi(const double & q2, const std::array<unsigned, 6> & phi_parameters, const std::vector<double> & Mres, const OPECurrent & current) const
+                {
+                    const complex<double> shifted_q2 = (q2 < 4.0 * power_of<2>(m_D0)) ? complex<double>(q2, 0.0) : complex<double>(q2, +1e-10);
+                    return phi(shifted_q2, phi_parameters, Mres, current);
+                }
+
+                // Residue of H at s = m_Jpsi2 computed as the residue wrt z -z_Jpsi divided by dz/ds evaluated at s = m_Jpsi2
+                inline complex<double> H_residue_jpsi(const std::array<unsigned, 6> & phi_parameters, const std::vector<double> & Mres, const OPECurrent & current, const std::array<complex<double>, interpolation_order + 1> & interpolation_values) const
+                {
+                    const double m_Jpsi2  = power_of<2>(m_Jpsi);
+                    const double m_psi2S2 = power_of<2>(m_psi2S);
+
+                    const double s_0   = this->t_0();
+                    const double s_p   = 4.0 * power_of<2>(m_D0);
+                    const auto z_Jpsi  = eos::nff_utils::z(m_Jpsi2,  s_p, s_0);
+                    const auto z_psi2S = eos::nff_utils::z(m_psi2S2, s_p, s_0);
+
+                    const complex<double> p_at_z = lagrange(interpolation_values, z_Jpsi);
+
+                    const complex<double> dzds = -pow(s_p - s_0, 0.5) * pow(s_p - m_Jpsi2, -0.5) * pow(pow(s_p - m_Jpsi2, 0.5) + pow(s_p - s_0, 0.5), -2);
+
+                    return p_at_z / phi(m_Jpsi2, phi_parameters, Mres, current) * (1 - norm(z_Jpsi)) * (1. - z_Jpsi * std::conj(z_psi2S)) / (z_Jpsi - z_psi2S) / dzds;
+                }
+
+                // Residue of H at s = m_psi2S2 computed as the residue wrt z -z_psi2S divided by dz/ds evaluated at s = m_psi2S2
+                inline complex<double> H_residue_psi2s(const std::array<unsigned, 6> & phi_parameters, const std::vector<double> & Mres, const OPECurrent & current, const std::array<complex<double>, interpolation_order + 1> & interpolation_values) const
+                {
+                    const double m_Jpsi2  = power_of<2>(m_Jpsi);
+                    const double m_psi2S2 = power_of<2>(m_psi2S);
+
+                    const double s_0   = this->t_0();
+                    const double s_p   = 4.0 * power_of<2>(m_D0);
+                    const auto z_Jpsi  = eos::nff_utils::z(m_Jpsi2,  s_p, s_0);
+                    const auto z_psi2S = eos::nff_utils::z(m_psi2S2, s_p, s_0);
+
+                    const complex<double> p_at_z = lagrange(interpolation_values, z_psi2S);
+
+                    const complex<double> dzds = -pow(s_p - s_0, 0.5) * pow(s_p - m_psi2S2, -0.5) * pow(pow(s_p - m_psi2S2, 0.5) + pow(s_p - s_0, 0.5), -2);
+
+                    return p_at_z / phi(m_psi2S2, phi_parameters, Mres, current) *(1 - norm(z_psi2S)) * (1. - z_psi2S * std::conj(z_Jpsi)) / (z_psi2S - z_Jpsi) / dzds;
+                }
+
+                virtual complex<double> H_perp(const complex<double> & q2) const
+                {
+                    const std::array<complex<double>, interpolation_order + 1> interpolation_values{
+                        complex<double>(re_at_m7_perp, im_at_m7_perp),
+                        complex<double>(re_at_m5_perp, im_at_m5_perp),
+                        complex<double>(re_at_m3_perp, im_at_m3_perp),
+                        complex<double>(re_at_m1_perp, im_at_m1_perp),
+                        polar<double>(abs_at_Jpsi_perp, arg_at_Jpsi_perp_minus_long + arg_at_Jpsi_long),
+                        polar<double>(abs_at_psi2S_perp, arg_at_psi2S_perp_minus_long + arg_at_psi2S_long)
+                    };
+
+                    const double s_0   = this->t_0();
+                    const double s_p   = 4.0 * power_of<2>(m_D0);
+                    const auto z       = eos::nff_utils::z(q2,                     s_p, s_0);
+                    const auto z_Jpsi  = eos::nff_utils::z(power_of<2>(m_Jpsi),    s_p, s_0);
+                    const auto z_psi2S = eos::nff_utils::z(power_of<2>(m_psi2S),   s_p, s_0);
+
+                    const complex<double> blaschke_factor = eos::nff_utils::blaschke_cc(z, z_Jpsi, z_psi2S);
+
+                    const std::array<unsigned, 6> phi_parameters = {1,1,3,3,0,6};
+                    const std::vector<double> Mres = {m_Bs_star};
+
+                    const complex<double> p_at_z = lagrange(interpolation_values, z);
+
+                    return p_at_z / phi(q2, phi_parameters, Mres, OPECurrent::V) / blaschke_factor;
+                }
+
+                virtual complex<double> H_perp(const double & q2) const
+                {
+                    return H_perp(complex<double>(q2, 0.0));
+                }
+
+                virtual complex<double> Hhat_perp(const double & q2) const
+                {
+                    const std::array<complex<double>, interpolation_order + 1> interpolation_values{
+                        complex<double>(re_at_m7_perp, im_at_m7_perp),
+                        complex<double>(re_at_m5_perp, im_at_m5_perp),
+                        complex<double>(re_at_m3_perp, im_at_m3_perp),
+                        complex<double>(re_at_m1_perp, im_at_m1_perp),
+                        polar<double>(abs_at_Jpsi_perp, arg_at_Jpsi_perp_minus_long + arg_at_Jpsi_long),
+                        polar<double>(abs_at_psi2S_perp, arg_at_psi2S_perp_minus_long + arg_at_psi2S_long)
+                    };
+
+                    const double s_0   = this->t_0();
+                    const double s_p   = 4.0 * power_of<2>(m_D0);
+                    const auto z       = eos::nff_utils::z(q2, s_p, s_0);
+
+                    return lagrange(interpolation_values, z);
+                }
+
+                virtual complex<double> H_para(const complex<double> & q2) const
+                {
+                    const std::array<complex<double>, interpolation_order + 1> interpolation_values{
+                        complex<double>(re_at_m7_para, im_at_m7_para),
+                        complex<double>(re_at_m5_para, im_at_m5_para),
+                        complex<double>(re_at_m3_para, im_at_m3_para),
+                        complex<double>(re_at_m1_para, im_at_m1_para),
+                        polar<double>(abs_at_Jpsi_para, arg_at_Jpsi_para_minus_long + arg_at_Jpsi_long),
+                        polar<double>(abs_at_psi2S_para, arg_at_psi2S_para_minus_long + arg_at_psi2S_long)
+                    };
+
+                    const double s_0   = this->t_0();
+                    const double s_p   = 4.0 * power_of<2>(m_D0);
+                    const auto z       = eos::nff_utils::z(q2,                     s_p, s_0);
+                    const auto z_Jpsi  = eos::nff_utils::z(power_of<2>(m_Jpsi),    s_p, s_0);
+                    const auto z_psi2S = eos::nff_utils::z(power_of<2>(m_psi2S),   s_p, s_0);
+
+                    const complex<double> blaschke_factor = eos::nff_utils::blaschke_cc(z, z_Jpsi, z_psi2S);
+
+                    const std::array<unsigned, 6> phi_parameters = {1,1,3,3,0,6};
+                    const std::vector<double> Mres = {m_Bs1};
+
+                    const complex<double> p_at_z = lagrange(interpolation_values, z);
+
+                    return p_at_z / phi(q2, phi_parameters, Mres, OPECurrent::A) / blaschke_factor;
+                }
+
+                virtual complex<double> H_para(const double & q2) const
+                {
+                    return H_para(complex<double>(q2, 0.0));
+                }
+
+                virtual complex<double> Hhat_para(const double & q2) const
+                {
+                    const std::array<complex<double>, interpolation_order + 1> interpolation_values{
+                        complex<double>(re_at_m7_para, im_at_m7_para),
+                        complex<double>(re_at_m5_para, im_at_m5_para),
+                        complex<double>(re_at_m3_para, im_at_m3_para),
+                        complex<double>(re_at_m1_para, im_at_m1_para),
+                        polar<double>(abs_at_Jpsi_para, arg_at_Jpsi_para_minus_long + arg_at_Jpsi_long),
+                        polar<double>(abs_at_psi2S_para, arg_at_psi2S_para_minus_long + arg_at_psi2S_long)
+                    };
+
+                    const double s_0   = this->t_0();
+                    const double s_p   = 4.0 * power_of<2>(m_D0);
+                    const auto z       = eos::nff_utils::z(q2, s_p, s_0);
+
+                    return lagrange(interpolation_values, z);
+                }
+
+                virtual complex<double> H_long(const complex<double> & q2) const
+                {
+                    const std::array<complex<double>, interpolation_order + 1> interpolation_values{
+                        complex<double>(re_at_m7_long, im_at_m7_long),
+                        complex<double>(re_at_m5_long, im_at_m5_long),
+                        complex<double>(re_at_m3_long, im_at_m3_long),
+                        complex<double>(re_at_m1_long, im_at_m1_long),
+                        polar<double>(abs_at_Jpsi_long, arg_at_Jpsi_long),
+                        polar<double>(abs_at_psi2S_long, arg_at_psi2S_long)
+                    };
+
+                    const double s_0   = this->t_0();
+                    const double s_p   = 4.0 * power_of<2>(m_D0);
+                    const auto z       = eos::nff_utils::z(q2,                     s_p, s_0);
+                    const auto z_Jpsi  = eos::nff_utils::z(power_of<2>(m_Jpsi),    s_p, s_0);
+                    const auto z_psi2S = eos::nff_utils::z(power_of<2>(m_psi2S),   s_p, s_0);
+
+                    const complex<double> blaschke_factor = eos::nff_utils::blaschke_cc(z, z_Jpsi, z_psi2S);
+
+                    const std::array<unsigned, 6> phi_parameters = {1,1,4,3,1,8};
+                    const std::vector<double> Mres = {m_Bs1};
+
+                    const complex<double> p_at_z = lagrange(interpolation_values, z);
+
+                    return p_at_z / phi(q2, phi_parameters, Mres, OPECurrent::A) / blaschke_factor;
+                }
+
+                virtual complex<double> H_long(const double & q2) const
+                {
+                    return H_long(complex<double>(q2, 0.0));
+                }
+
+                virtual complex<double> Hhat_long(const double & q2) const
+                {
+                    const std::array<complex<double>, interpolation_order + 1> interpolation_values{
+                        complex<double>(re_at_m7_long, im_at_m7_long),
+                        complex<double>(re_at_m5_long, im_at_m5_long),
+                        complex<double>(re_at_m3_long, im_at_m3_long),
+                        complex<double>(re_at_m1_long, im_at_m1_long),
+                        polar<double>(abs_at_Jpsi_long, arg_at_Jpsi_long),
+                        polar<double>(abs_at_psi2S_long, arg_at_psi2S_long)
+                    };
+
+                    const double s_0   = this->t_0();
+                    const double s_p   = 4.0 * power_of<2>(m_D0);
+                    const auto z       = eos::nff_utils::z(q2, s_p, s_0);
+
+                    return lagrange(interpolation_values, z);
+                }
+
+                virtual complex<double> H_perp_residue_jpsi() const
+                {
+                    const std::array<complex<double>, interpolation_order + 1> interpolation_values{
+                        complex<double>(re_at_m7_perp, im_at_m7_perp),
+                        complex<double>(re_at_m5_perp, im_at_m5_perp),
+                        complex<double>(re_at_m3_perp, im_at_m3_perp),
+                        complex<double>(re_at_m1_perp, im_at_m1_perp),
+                        polar<double>(abs_at_Jpsi_perp, arg_at_Jpsi_perp_minus_long + arg_at_Jpsi_long),
+                        polar<double>(abs_at_psi2S_perp, arg_at_psi2S_perp_minus_long + arg_at_psi2S_long)
+                    };
+
+                    const std::array<unsigned, 6> phi_parameters = {1,1,3,3,0,6};
+                    const std::vector<double> Mres = {m_Bs_star};
+
+                    return H_residue_jpsi(phi_parameters, Mres, OPECurrent::V, interpolation_values);
+                }
+
+                virtual complex<double> H_perp_residue_psi2s() const
+                {
+                    const std::array<complex<double>, interpolation_order + 1> interpolation_values{
+                        complex<double>(re_at_m7_perp, im_at_m7_perp),
+                        complex<double>(re_at_m5_perp, im_at_m5_perp),
+                        complex<double>(re_at_m3_perp, im_at_m3_perp),
+                        complex<double>(re_at_m1_perp, im_at_m1_perp),
+                        polar<double>(abs_at_Jpsi_perp, arg_at_Jpsi_perp_minus_long + arg_at_Jpsi_long),
+                        polar<double>(abs_at_psi2S_perp, arg_at_psi2S_perp_minus_long + arg_at_psi2S_long)
+                    };
+
+                    const std::array<unsigned, 6> phi_parameters = {1,1,3,3,0,6};
+                    const std::vector<double> Mres = {m_Bs_star};
+
+                    return H_residue_psi2s(phi_parameters, Mres, OPECurrent::V, interpolation_values);
+                }
+
+                virtual complex<double> H_para_residue_jpsi() const
+                {
+                    const std::array<complex<double>, interpolation_order + 1> interpolation_values{
+                        complex<double>(re_at_m7_para, im_at_m7_para),
+                        complex<double>(re_at_m5_para, im_at_m5_para),
+                        complex<double>(re_at_m3_para, im_at_m3_para),
+                        complex<double>(re_at_m1_para, im_at_m1_para),
+                        polar<double>(abs_at_Jpsi_para, arg_at_Jpsi_para_minus_long + arg_at_Jpsi_long),
+                        polar<double>(abs_at_psi2S_para, arg_at_psi2S_para_minus_long + arg_at_psi2S_long)
+                    };
+
+                    const std::array<unsigned, 6> phi_parameters = {1,1,3,3,0,6};
+                    const std::vector<double> Mres = {m_Bs1};
+
+                    return H_residue_jpsi(phi_parameters, Mres, OPECurrent::A, interpolation_values);
+                }
+
+                virtual complex<double> H_para_residue_psi2s() const
+                {
+                    const std::array<complex<double>, interpolation_order + 1> interpolation_values{
+                        complex<double>(re_at_m7_para, im_at_m7_para),
+                        complex<double>(re_at_m5_para, im_at_m5_para),
+                        complex<double>(re_at_m3_para, im_at_m3_para),
+                        complex<double>(re_at_m1_para, im_at_m1_para),
+                        polar<double>(abs_at_Jpsi_para, arg_at_Jpsi_para_minus_long + arg_at_Jpsi_long),
+                        polar<double>(abs_at_psi2S_para, arg_at_psi2S_para_minus_long + arg_at_psi2S_long)
+                    };
+
+                    const std::array<unsigned, 6> phi_parameters = {1,1,3,3,0,6};
+                    const std::vector<double> Mres = {m_Bs1};
+
+                    return H_residue_psi2s(phi_parameters, Mres, OPECurrent::A, interpolation_values);
+                }
+
+                virtual complex<double> H_long_residue_jpsi() const
+                {
+                    const std::array<complex<double>, interpolation_order + 1> interpolation_values{
+                        complex<double>(re_at_m7_long, im_at_m7_long),
+                        complex<double>(re_at_m5_long, im_at_m5_long),
+                        complex<double>(re_at_m3_long, im_at_m3_long),
+                        complex<double>(re_at_m1_long, im_at_m1_long),
+                        polar<double>(abs_at_Jpsi_long, arg_at_Jpsi_long),
+                        polar<double>(abs_at_psi2S_long, arg_at_psi2S_long)
+                    };
+
+                    const std::array<unsigned, 6> phi_parameters = {1,1,4,3,1,8};
+                    const std::vector<double> Mres = {m_Bs1};
+
+                    return H_residue_jpsi(phi_parameters, Mres, OPECurrent::A, interpolation_values);
+                }
+
+                virtual complex<double> H_long_residue_psi2s() const
+                {
+                    const std::array<complex<double>, interpolation_order + 1> interpolation_values{
+                        complex<double>(re_at_m7_long, im_at_m7_long),
+                        complex<double>(re_at_m5_long, im_at_m5_long),
+                        complex<double>(re_at_m3_long, im_at_m3_long),
+                        complex<double>(re_at_m1_long, im_at_m1_long),
+                        polar<double>(abs_at_Jpsi_long, arg_at_Jpsi_long),
+                        polar<double>(abs_at_psi2S_long, arg_at_psi2S_long)
+                    };
+
+                    const std::array<unsigned, 6> phi_parameters = {1,1,4,3,1,8};
+                    const std::vector<double> Mres = {m_Bs1};
+
+                    return H_residue_psi2s(phi_parameters, Mres, OPECurrent::A, interpolation_values);
+                }
+
+                virtual complex<double> ratio_perp(const complex<double> & q2) const
+                {
+                    const double m_V2  = power_of<2>(m_V);
+                    const double m_B2  = power_of<2>(m_B);
+                    const complex<double> lambda = eos::lambda(complex<double>(m_B2, 0.0), complex<double>(m_V2, 0.0), q2);
+                    const complex<double> F_perp = pow(2.0 * lambda, 0.5) / (m_B + m_V) / m_B() * form_factors->v(q2);
+
+                    return H_perp(q2) / F_perp;
+                }
+
+                virtual complex<double> ratio_perp(const double & q2) const
+                {
+                    return ratio_perp(complex<double>(q2, 0.0));
+                }
+
+                virtual complex<double> F_ratio_perp(const complex<double> & q2) const
+                {
+                    return (m_B + m_V) / m_B * form_factors->t_1(q2) / form_factors->v(q2);
+                }
+
+                virtual complex<double> ratio_para(const complex<double> & q2) const
+                {
+                    const complex<double> F_para = sqrt(2) * (m_B + m_V) / m_B * form_factors->a_1(q2);
+
+                    return H_para(q2) / F_para;
+                }
+
+                virtual complex<double> ratio_para(const double & q2) const
+                {
+                    return ratio_para(complex<double>(q2, 0.0));
+                }
+
+                virtual complex<double> F_ratio_para(const complex<double> & q2) const
+                {
+                    return (m_B - m_V) / m_B * form_factors->t_2(q2) / form_factors->a_1(q2);
+                }
+
+                virtual complex<double> ratio_long(const complex<double> & q2) const
+                {
+                    const double m_V2  = power_of<2>(m_V);
+                    const double m_B2  = power_of<2>(m_B);
+                    const complex<double> lambda = eos::lambda(complex<double>(m_B2, 0.0), complex<double>(m_V2, 0.0), q2);
+                    const complex<double> F_long = ((m_B2 - m_V2 - q2) * power_of<2>(m_B + m_V) * form_factors->a_1(q2)
+                            - lambda * form_factors->a_2(q2)) / (2 * m_V * m_B2 * (m_B + m_V));
+
+                    return H_long(q2) / F_long;
+                }
+
+                virtual complex<double> ratio_long(const double & q2) const
+                {
+                    return ratio_long(complex<double>(q2, 0.0));
+                }
+
+                virtual complex<double> F_ratio_long(const complex<double> & q2) const
+                {
+                    const double m_V2  = power_of<2>(m_V);
+                    const double m_B2  = power_of<2>(m_B);
+                    const complex<double> lambda = eos::lambda(complex<double>(m_B2, 0.0), complex<double>(m_V2, 0.0), q2);
+                    const complex<double> F_long = ((m_B2 - m_V2 - q2) * power_of<2>(m_B + m_V) * form_factors->a_1(q2)
+                            - lambda * form_factors->a_2(q2)) / (2 * m_V * m_B2 * (m_B + m_V));
+                    const complex<double> F_T_long = q2 * ((m_B2 + 3 * m_V2 - q2) * (m_B2 - m_V2) * form_factors->t_2(q2)
+                            - lambda * form_factors->a_2(q2)) / (2 * m_V * m_B2 * m_B * (m_B2 - m_V2));
+
+                    return F_T_long / F_long;
+                }
+
+                inline std::pair<gsl_vector *, gsl_vector *> orthonormal_perp_coefficients() const
+                {
+                    const std::array<complex<double>, interpolation_order + 1> interpolation_values{
+                        complex<double>(re_at_m7_perp, im_at_m7_perp),
+                        complex<double>(re_at_m5_perp, im_at_m5_perp),
+                        complex<double>(re_at_m3_perp, im_at_m3_perp),
+                        complex<double>(re_at_m1_perp, im_at_m1_perp),
+                        polar<double>(abs_at_Jpsi_perp, arg_at_Jpsi_perp_minus_long + arg_at_Jpsi_long),
+                        polar<double>(abs_at_psi2S_perp, arg_at_psi2S_perp_minus_long + arg_at_psi2S_long)
+                    };
+
+                    std::array<complex<double>, interpolation_order + 1> L_coeffs = lagrange.get_coefficients(interpolation_values);
+
+                    gsl_vector * C_real = gsl_vector_calloc(interpolation_order + 1);
+                    gsl_vector * C_imag = gsl_vector_calloc(interpolation_order + 1);
+
+                    for (unsigned i = 0; i <= interpolation_order; ++i)
+                    {
+                        gsl_vector_set(C_real, i, std::real(L_coeffs[i]));
+                        gsl_vector_set(C_imag, i, std::imag(L_coeffs[i]));
+                    }
+
+                    return std::make_pair(C_real, C_imag);
+                }
+
+                inline std::pair<gsl_vector *, gsl_vector *> orthonormal_para_coefficients() const
+                {
+                    const std::array<complex<double>, interpolation_order + 1> interpolation_values{
+                        complex<double>(re_at_m7_para, im_at_m7_para),
+                        complex<double>(re_at_m5_para, im_at_m5_para),
+                        complex<double>(re_at_m3_para, im_at_m3_para),
+                        complex<double>(re_at_m1_para, im_at_m1_para),
+                        polar<double>(abs_at_Jpsi_para, arg_at_Jpsi_para_minus_long + arg_at_Jpsi_long),
+                        polar<double>(abs_at_psi2S_para, arg_at_psi2S_para_minus_long + arg_at_psi2S_long)
+                    };
+
+                    std::array<complex<double>, interpolation_order + 1> L_coeffs = lagrange.get_coefficients(interpolation_values);
+
+                    gsl_vector * C_real = gsl_vector_calloc(interpolation_order + 1);
+                    gsl_vector * C_imag = gsl_vector_calloc(interpolation_order + 1);
+
+                    for (unsigned i = 0; i <= interpolation_order; ++i)
+                    {
+                        gsl_vector_set(C_real, i, std::real(L_coeffs[i]));
+                        gsl_vector_set(C_imag, i, std::imag(L_coeffs[i]));
+                    }
+
+                    return std::make_pair(C_real, C_imag);
+                }
+
+                inline std::pair<gsl_vector *, gsl_vector *> orthonormal_long_coefficients() const
+                {
+                    const std::array<complex<double>, interpolation_order + 1> interpolation_values{
+                        complex<double>(re_at_m7_long, im_at_m7_long),
+                        complex<double>(re_at_m5_long, im_at_m5_long),
+                        complex<double>(re_at_m3_long, im_at_m3_long),
+                        complex<double>(re_at_m1_long, im_at_m1_long),
+                        polar<double>(abs_at_Jpsi_long, arg_at_Jpsi_long),
+                        polar<double>(abs_at_psi2S_long, arg_at_psi2S_long)
+                    };
+
+                    std::array<complex<double>, interpolation_order + 1> L_coeffs = lagrange.get_coefficients(interpolation_values);
+
+                    gsl_vector * C_real = gsl_vector_calloc(interpolation_order + 1);
+                    gsl_vector * C_imag = gsl_vector_calloc(interpolation_order + 1);
+
+                    for (unsigned i = 0; i <= interpolation_order; ++i)
+                    {
+                        gsl_vector_set(C_real, i, std::real(L_coeffs[i]));
+                        gsl_vector_set(C_imag, i, std::imag(L_coeffs[i]));
+                    }
+
+                    return std::make_pair(C_real, C_imag);
+                }
+
+                virtual complex<double> get_orthonormal_perp_coefficients(const unsigned & i) const
+                {
+                    auto coefficients = orthonormal_perp_coefficients();
+
+                    return complex<double>(gsl_vector_get(coefficients.first,  i),
+                                           gsl_vector_get(coefficients.second, i));
+                }
+
+                virtual complex<double> get_orthonormal_para_coefficients(const unsigned & i) const
+                {
+                    auto coefficients = orthonormal_para_coefficients();
+
+                    return complex<double>(gsl_vector_get(coefficients.first,  i),
+                                           gsl_vector_get(coefficients.second, i));
+                }
+
+                virtual complex<double> get_orthonormal_long_coefficients(const unsigned & i) const
+                {
+                    auto coefficients = orthonormal_long_coefficients();
+
+                    return complex<double>(gsl_vector_get(coefficients.first,  i),
+                                           gsl_vector_get(coefficients.second, i));
+                }
+
+                virtual double weak_bound() const
+                {
+                    auto perp_coefficients = orthonormal_perp_coefficients();
+                    auto para_coefficients = orthonormal_para_coefficients();
+                    auto long_coefficients = orthonormal_long_coefficients();
+
+                    double largest_absolute_coeff = 0.0, coeff;
+
+                    for (unsigned i = 0; i <= interpolation_order; ++i)
+                    {
+                        coeff = power_of<2>(gsl_vector_get(perp_coefficients.first,  i))
+                              + power_of<2>(gsl_vector_get(perp_coefficients.second, i));
+                        if (coeff > largest_absolute_coeff)
+                        {
+                            largest_absolute_coeff = coeff;
+                        }
+                        coeff = power_of<2>(gsl_vector_get(para_coefficients.first,  i))
+                              + power_of<2>(gsl_vector_get(para_coefficients.second, i));
+                        if (coeff > largest_absolute_coeff)
+                        {
+                            largest_absolute_coeff = coeff;
+                        }
+                        coeff = power_of<2>(gsl_vector_get(long_coefficients.first,  i))
+                              + power_of<2>(gsl_vector_get(long_coefficients.second, i));
+                        if (coeff > largest_absolute_coeff)
+                        {
+                            largest_absolute_coeff = coeff;
+                        }
+                    }
+
+                    return largest_absolute_coeff;
+                }
+
+                virtual double strong_bound() const
+                {
+                    auto perp_coefficients = orthonormal_perp_coefficients();
+                    auto para_coefficients = orthonormal_para_coefficients();
+                    auto long_coefficients = orthonormal_long_coefficients();
+
+                    double coefficient_sum = 0.0;
+
+                    for (unsigned i = 0; i <= interpolation_order; ++i)
+                    {
+                        coefficient_sum += power_of<2>(gsl_vector_get(perp_coefficients.first,  i))
+                                          + power_of<2>(gsl_vector_get(perp_coefficients.second, i));
+                        coefficient_sum += power_of<2>(gsl_vector_get(para_coefficients.first,  i))
+                                          + power_of<2>(gsl_vector_get(para_coefficients.second, i));
+                        coefficient_sum += power_of<2>(gsl_vector_get(long_coefficients.first,  i))
+                                          + power_of<2>(gsl_vector_get(long_coefficients.second, i));
+                    }
+
+                    return coefficient_sum;
+                }
+
+                virtual double weak_bound_log_likelihood() const
+                {
+                    const double saturation = weak_bound();
+                    if (saturation < this->bound)
+                    {
+                        return 0.;
+                    }
+                    else
+                    {
+                        // Halfnormal constraint
+                        return -0.5 * power_of<2>( (saturation - this->bound) / this->bound_uncertainty );
+                    }
+                }
+
+                virtual double strong_bound_log_likelihood() const
+                {
+                    const double saturation = strong_bound();
+                    if (saturation < this->bound)
+                    {
+                        return 0.;
+                    }
+                    else
+                    {
+                        // Halfnormal constraint
+                        return -0.5 * power_of<2>( (saturation - this->bound) / this->bound_uncertainty );
+                    }
+                }
+
+                virtual complex<double> normalized_moment_V1(const double &) const
+                {
+                    return 0.0;
+                }
+
+                virtual complex<double> normalized_moment_V2(const double &) const
+                {
+                    return 0.0;
+                }
+
+                virtual complex<double> normalized_moment_V23(const double &) const
+                {
+                    return 0.0;
+                }
+
+
+                static NonlocalFormFactorPtr<PToV> make(const Parameters & p, const Options & o)
+                {
+                    return NonlocalFormFactorPtr<PToV>(new GRV2026<Process_>(p, o));
+                }
+
+                virtual Diagnostics diagnostics() const
+                {
+                    Diagnostics results;
+
+                    return results;
+                }
+        };
+
+        
+
+
+
+
     }
 
     NonlocalFormFactorPtr<PToV>
@@ -1656,8 +2470,10 @@ namespace eos
             // parametrizations
             std::make_pair("B->K^*::GvDV2020",          &nff_p_to_v::GvDV2020<nff::BToKstar>::make),
             std::make_pair("B->K^*::GRvDV2022order5",   &nff_p_to_v::GRvDV2022order5<nff::BToKstar>::make),
+            std::make_pair("B->K^*::GRV2026",   &nff_p_to_v::GRV2026<nff::BToKstar>::make),
             std::make_pair("B_s->phi::GvDV2020",        &nff_p_to_v::GvDV2020<nff::BsToPhi>::make),
             std::make_pair("B_s->phi::GRvDV2022order5", &nff_p_to_v::GRvDV2022order5<nff::BsToPhi>::make),
+            std::make_pair("B_s->phi::GRV2026", &nff_p_to_v::GRV2026<nff::BsToPhi>::make),
         };
 
         auto i = entries.find(name);
