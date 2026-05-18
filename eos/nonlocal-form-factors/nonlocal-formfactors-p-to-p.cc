@@ -1458,8 +1458,10 @@ namespace eos
 
                 ~GRV2026() = default;
 
-                inline complex<double> phi(const complex<double> & q2, const std::array<unsigned, 7> & phi_parameters, const std::vector<double> & Mres) const
+                inline complex<double> phi(const complex<double> & q2, const std::array<unsigned, 6> & phi_parameters, const std::vector<double> & Mres) const
                 {
+                    // phi_parameters = {a, b, c, d, e, k}
+                    //
                     // Values of a, b, c, d, e depends on the form factor:
                     // FF                        a    b    c    d    e
                     // 0(P->P) aka plus          3    3    4    3    1
@@ -1487,7 +1489,7 @@ namespace eos
                     const double sp = power_of<2>(m_B + m_P);     // s_+
                     const double sm = power_of<2>(m_B - m_P);     // s_-
 
-                    const double a = phi_parameters[0], b = phi_parameters[1], c = phi_parameters[2], d = phi_parameters[3], e = phi_parameters[4], k = phi_parameters[5], n_I = phi_parameters[6];
+                    const double a = phi_parameters[0], b = phi_parameters[1], c = phi_parameters[2], d = phi_parameters[3], e = phi_parameters[4], k = phi_parameters[5];
                     const double K = 3/(16 * pow(M_PI, 4)) * 1/pow(m_B, k);
 
                     const complex<double> sqrt_sG_s   = std::sqrt(complex<double>(sG - s));
@@ -1495,7 +1497,7 @@ namespace eos
                     const complex<double> sqrt_sG     = std::sqrt(complex<double>(sG));
                     const complex<double> sqrt_sG_Q2  = std::sqrt(complex<double>(sG + Q2));
 
-                    const double norm = std::sqrt(n_I / (K * M_PI * chi));
+                    const double norm = std::sqrt(1.0 / (K * M_PI * chi));
 
                     const complex<double> factor_1 = std::pow(complex<double>(sG - q2) / complex<double>(sG - s_0), 0.25) * (sqrt_sG_s + sqrt_sG_s0);
                     const complex<double> factor_a = std::pow(complex<double>(sp - q2), 0.25 * a);
@@ -1515,7 +1517,7 @@ namespace eos
                     return norm * factor_1 * factor_a * factor_b * factor_ce * factor_d * factor_Mres;
                 }
 
-                inline complex<double> phi(const double & q2, const std::array<unsigned, 7> & phi_parameters, const std::vector<double> & Mres) const
+                inline complex<double> phi(const double & q2, const std::array<unsigned, 6> & phi_parameters, const std::vector<double> & Mres) const
                 {
                     if (q2 < 4.0 * power_of<2>(m_D0))
                     {
@@ -1554,49 +1556,16 @@ namespace eos
                     return std::make_pair(C_real, C_imag);
                 }
 
-                inline std::pair<gsl_vector *, gsl_vector *> orthonormal_coefficients_old() const
-                {
-                    const std::array<complex<double>, interpolation_order + 1> interpolation_values{
-                        complex<double>(re_at_m7_plus, im_at_m7_plus),
-                        complex<double>(re_at_m5_plus, im_at_m5_plus),
-                        complex<double>(re_at_m3_plus, im_at_m3_plus),
-                        complex<double>(re_at_m1_plus, im_at_m1_plus),
-                        polar<double>(abs_at_Jpsi_plus, arg_at_Jpsi_plus),
-                        polar<double>(abs_at_psi2S_plus, arg_at_psi2S_plus)
-                    };
-
-                    std::array<complex<double>, interpolation_order + 1> L_coeffs = lagrange.get_coefficients(interpolation_values);
-
-                    // Split array of coefficients to real and imaginary parts
-                    gsl_vector * L_coeffs_real_part = gsl_vector_calloc(interpolation_order + 1);
-                    gsl_vector * L_coeffs_imag_part = gsl_vector_calloc(interpolation_order + 1);
-
-                    for (unsigned i = 0; i <= interpolation_order; ++i)
-                    {
-                        gsl_vector_set(L_coeffs_real_part, i, real(L_coeffs[i]));
-                        gsl_vector_set(L_coeffs_imag_part, i, imag(L_coeffs[i]));
-                    }
-
-                    const gsl_matrix * coefficient_matrix = orthonormal_polynomials.coefficient_matrix();
-
-                    // Solve the system by computing (coefficient_matrix)^(-1) . L_coeffs_real_part and idem for imag
-                    gsl_blas_dtrsv(CblasUpper, CblasNoTrans, CblasNonUnit, coefficient_matrix, L_coeffs_real_part);
-                    gsl_blas_dtrsv(CblasUpper, CblasNoTrans, CblasNonUnit, coefficient_matrix, L_coeffs_imag_part);
-
-                    return std::make_pair(L_coeffs_real_part, L_coeffs_imag_part);
-                }
-
                 virtual complex<double> get_orthonormal_coefficients(const unsigned & i) const
                 {
                     auto coefficients = orthonormal_coefficients();
-                    // auto coefficients = orthonormal_coefficients_old();
 
                     return complex<double>(gsl_vector_get(coefficients.first,  i),
                                            gsl_vector_get(coefficients.second, i));
                 }
 
                 // Residue of H at s = m_Jpsi2 computed as the residue wrt z -z_Jpsi divided by dz/ds evaluated at s = m_Jpsi2
-                inline complex<double> H_residue_jpsi(const std::array<unsigned, 7> & phi_parameters, const std::vector<double> & Mres, const std::array<complex<double>, interpolation_order + 1> & interpolation_values) const
+                inline complex<double> H_residue_jpsi(const std::array<unsigned, 6> & phi_parameters, const std::vector<double> & Mres, const std::array<complex<double>, interpolation_order + 1> & interpolation_values) const
                 {
                     const double m_Jpsi2  = power_of<2>(m_Jpsi);
                     const double m_psi2S2 = power_of<2>(m_psi2S);
@@ -1615,7 +1584,7 @@ namespace eos
                 }
 
                 // Residue of H at s = m_psi2S2 computed as the residue wrt z -z_psi2S divided by dz/ds evaluated at s = m_psi2S2
-                inline complex<double> H_residue_psi2s(const std::array<unsigned, 7> & phi_parameters, const std::vector<double> & Mres, const std::array<complex<double>, interpolation_order + 1> & interpolation_values) const
+                inline complex<double> H_residue_psi2s(const std::array<unsigned, 6> & phi_parameters, const std::vector<double> & Mres, const std::array<complex<double>, interpolation_order + 1> & interpolation_values) const
                 {
                     const double m_Jpsi2  = power_of<2>(m_Jpsi);
                     const double m_psi2S2 = power_of<2>(m_psi2S);
@@ -1653,7 +1622,7 @@ namespace eos
                     const complex<double> blaschke_factor = eos::nff_utils::blaschke_cc(z, z_Jpsi, z_psi2S);
 
                     // For B to K 
-                    const std::array<unsigned, 7> phi_parameters = {3, 3, 4, 3, 1, 4, 2};
+                    const std::array<unsigned, 6> phi_parameters = {3, 3, 4, 3, 1, 4};
                     const std::vector<double> Mres = {m_Bs_star};
 
                     const complex<double> p_at_z = lagrange(interpolation_values, z);
@@ -1696,7 +1665,7 @@ namespace eos
                     };
 
                     // For B to K 
-                    const std::array<unsigned, 7> phi_parameters = {3, 3, 4, 3, 1, 4, 2};
+                    const std::array<unsigned, 6> phi_parameters = {3, 3, 4, 3, 1, 4};
                     const std::vector<double> Mres = {m_Bs_star};
 
                     return H_residue_jpsi(phi_parameters, Mres, interpolation_values);
@@ -1714,7 +1683,7 @@ namespace eos
                     };
 
                     // For B to K 
-                    const std::array<unsigned, 7> phi_parameters = {3, 3, 4, 3, 1, 4, 2};
+                    const std::array<unsigned, 6> phi_parameters = {3, 3, 4, 3, 1, 4};
                     const std::vector<double> Mres = {m_Bs_star};
 
                     return H_residue_psi2s(phi_parameters, Mres, interpolation_values);
@@ -1750,7 +1719,6 @@ namespace eos
                 virtual double weak_bound() const
                 {
                     auto coefficients = orthonormal_coefficients();
-                    // auto coefficients = orthonormal_coefficients_old();
 
                     double largest_absolute_coeff = 0.0, coeff;
 
@@ -1770,7 +1738,6 @@ namespace eos
                 virtual double strong_bound() const
                 {
                     auto coefficients = orthonormal_coefficients();
-                    // auto coefficients = orthonormal_coefficients_old();
 
                     double coefficient_sum = 0.0;
 
@@ -1823,7 +1790,7 @@ namespace eos
                     // 1) OUTER FUNCTION
 
                     // For B to K
-                    const std::array<unsigned, 7> phi_parameters = {3, 3, 4, 3, 1, 4, 2};
+                    const std::array<unsigned, 6> phi_parameters = {3, 3, 4, 3, 1, 4};
                     const std::vector<double> Mres = {m_Bs_star};
                     
                     results.add({ this->t_s(), "t_s" });
