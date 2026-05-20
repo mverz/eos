@@ -38,3 +38,32 @@ B->Kpsi2S::BR@PDG:2020A:
     sigma-stat: {hi: 0., lo: 0.}
     sigma-sys: {hi: 2.2e-5, lo: 2.2e-5}
 # }}}
+#
+# PDG:2024
+#
+# {{{
+B^0->K^0Jpsi::BR@PDG:2024A:
+    type: Gaussian
+    observable: B->Kpsi::BR
+    kinematics: {}
+    options: {q: d, psi: J/psi}
+    mean: 8.91e-4
+    sigma-stat: {hi: 0., lo: 0.}
+    sigma-sys: {hi: 2.1e-5, lo: 2.1e-5}
+B->KJpsi::BR@PDG:2024A:
+    type: Gaussian
+    observable: B->Kpsi::BR
+    kinematics: {}
+    options: {q: u, psi: J/psi}
+    mean: 10.02e-4
+    sigma-stat: {hi: 0., lo: 0.}
+    sigma-sys: {hi: 1.9e-5, lo: 1.9e-5}
+B->Kpsi2S::BR@PDG:2024A:
+    type: Gaussian
+    observable: B->Kpsi::BR
+    kinematics: {}
+    options: {q: u, psi: psi(2S)}
+    mean: 6.24e-4
+    sigma-stat: {hi: 0., lo: 0.}
+    sigma-sys: {hi: 2.1e-5, lo: 2.1e-5}
+# }}}
