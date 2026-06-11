@@ -4,6 +4,7 @@
  * Copyright (c) 2017-2025 Danny van Dyk
  * Copyright (c) 2020 Nico Gubernari
  * Copyright (c) 2021 Méril Reboud
+ * Copyright (c) 2026 Matteo Verzeletti
  *
  * This file is part of the EOS project. EOS is free software;
  * you can redistribute it and/or modify it under the terms of the GNU General
@@ -1410,7 +1411,7 @@ namespace eos
                 UsedParameter s_G;
                 const std::vector<double> m_Gamma;
                 const std::vector<complex<double>> z_poles; // z(m ^2) for m < s_G in m_Gamma
-                const std::vector<double> m_res; // m > s_G in m_Gamma 
+                const std::vector<double> m_res; // m > s_G in m_Gamma
 
                 static std::vector<complex<double>> make_z_poles(const std::vector<double> & m_Gamma, double sG, double t0)
                 {
@@ -1420,7 +1421,7 @@ namespace eos
                         if (power_of<2>(m) < sG)
                         {
                             output.push_back(eos::nff_utils::z(power_of<2>(m), sG, t0));
-                        }                            
+                        }
                     }
                     return output;
                 }
@@ -1669,7 +1670,7 @@ namespace eos
 
                     const complex<double> blaschke_factor = eos::nff_utils::blaschke_cc(z, z_poles);
 
-                    // For B to K 
+                    // For B to K
                     const std::array<unsigned, 6> phi_parameters = {3, 3, 4, 3, 1, 4};
                     const std::vector<double> Mres = m_res;
 
@@ -1712,7 +1713,7 @@ namespace eos
                         polar<double>(abs_at_Jpsi_plus, arg_at_Jpsi_plus)
                     };
 
-                    // For B to K 
+                    // For B to K
                     const std::array<unsigned, 6> phi_parameters = {3, 3, 4, 3, 1, 4};
                     const std::vector<double> Mres = m_res;
 
@@ -1730,7 +1731,7 @@ namespace eos
                         polar<double>(abs_at_Jpsi_plus, arg_at_Jpsi_plus)
                     };
 
-                    // For B to K 
+                    // For B to K
                     const std::array<unsigned, 6> phi_parameters = {3, 3, 4, 3, 1, 4};
                     const std::vector<double> Mres = m_res;
 
@@ -1840,24 +1841,13 @@ namespace eos
                     // For B to K
                     const std::array<unsigned, 6> phi_parameters = {3, 3, 4, 3, 1, 4};
                     const std::vector<double> Mres = m_res;
-                    
-                    results.add({ this->t_s(), "t_s" });
-                    results.add({ this->s_G(), "s_G" });
-                    for (const auto & zz : this->z_poles)
-                    {
-                        results.add({ zz.real(), "Re_z_poles" });
-                        results.add({ zz.imag(), "Im_z_poles" });
-                    }
-                    for (const auto & mres : this->m_res)
-                    {
-                        results.add({ mres, "Mres" });
-                    }
+
                     results.add({ real(this->phi(-7.0, phi_parameters, Mres)), "Re{phi_+(q2 = -7.0)}" });
-                    results.add({ imag(this->phi(-7.0, phi_parameters, Mres)), "Im{phi_+(q2 = -7.0)}" });
+                    // results.add({ imag(this->phi(-7.0, phi_parameters, Mres)), "Im{phi_+(q2 = -7.0)}" });
                     results.add({ real(this->phi(-1.0, phi_parameters, Mres)), "Re{phi_+(q2 = -1.0)}" });
-                    results.add({ imag(this->phi(-1.0, phi_parameters, Mres)), "Im{phi_+(q2 = -1.0)}" });
+                    // results.add({ imag(this->phi(-1.0, phi_parameters, Mres)), "Im{phi_+(q2 = -1.0)}" });
                     results.add({ real(this->phi(5.0, phi_parameters, Mres)), "Re{phi_+(q2 = 5.0)}" });
-                    results.add({ imag(this->phi(5.0, phi_parameters, Mres)), "Im{phi_+(q2 = 5.0)}" });
+                    // results.add({ imag(this->phi(5.0, phi_parameters, Mres)), "Im{phi_+(q2 = 5.0)}" });
                     results.add({ real(this->phi(16.0, phi_parameters, Mres)), "Re{phi_+(q2 = 16.0)}" });
                     results.add({ imag(this->phi(16.0, phi_parameters, Mres)), "Im{phi_+(q2 = 16.0)}" });
                     results.add({ real(this->phi(25.0, phi_parameters, Mres)), "Re{phi_+(q2 = 25.0)}" });
@@ -1895,23 +1885,23 @@ namespace eos
                             zpow *= z;
                         }
 
-                        results.add({ std::real(p_lagrange), "Re{P_GRV2026_lagrange(q2 = " + std::to_string(q2_val) + ")}" });
-                        results.add({ std::imag(p_lagrange), "Im{P_GRV2026_lagrange(q2 = " + std::to_string(q2_val) + ")}" });
-                        results.add({ std::real(p_monomial), "Re{P_GRV2026_monomial(q2 = " + std::to_string(q2_val) + ")}" });
-                        results.add({ std::imag(p_monomial), "Im{P_GRV2026_monomial(q2 = " + std::to_string(q2_val) + ")}" });
+                        // results.add({ std::real(p_lagrange), "Re{P_GRV2026_lagrange(q2 = " + std::to_string(q2_val) + ")}" });
+                        // results.add({ std::imag(p_lagrange), "Im{P_GRV2026_lagrange(q2 = " + std::to_string(q2_val) + ")}" });
+                        // results.add({ std::real(p_monomial), "Re{P_GRV2026_monomial(q2 = " + std::to_string(q2_val) + ")}" });
+                        // results.add({ std::imag(p_monomial), "Im{P_GRV2026_monomial(q2 = " + std::to_string(q2_val) + ")}" });
                     }
 
                     for (unsigned i = 0; i <= interpolation_order; ++i)
                         {
-                            results.add({ std::real(get_orthonormal_coefficients(i)), "Re{GRV2026_monomial_coeff_" + std::to_string(i) + "}" });
-                            results.add({ std::imag(get_orthonormal_coefficients(i)), "Im{GRV2026_monomial_coeff_" + std::to_string(i) + "}" });
+                            // results.add({ std::real(get_orthonormal_coefficients(i)), "Re{GRV2026_monomial_coeff_" + std::to_string(i) + "}" });
+                            // results.add({ std::imag(get_orthonormal_coefficients(i)), "Im{GRV2026_monomial_coeff_" + std::to_string(i) + "}" });
                         }
 
-                
+
                     // 3) OBSERVABLES
 
-                    q2_vals = {-7.0, -1.0, 5.0, 16.0, 25.0, 35.0};
-                    for (const double & q2 : q2_vals)
+                    std::array<double, 4> q2_vals_2 = {-7.0, -1.0, 5.0, 11.0};
+                    for (const double & q2 : q2_vals_2)
                     {
                         results.add({ std::real(H_plus(q2)), "Re{H_+(q2 = " + std::to_string(q2) + ")}" });
                         results.add({ std::imag(H_plus(q2)), "Im{H_+(q2 = " + std::to_string(q2) + ")}" });
@@ -2201,7 +2191,7 @@ namespace eos
                     const auto z       = eos::nff_utils::z(q2, s_G, s_0);
                     const complex<double> blaschke_factor = eos::nff_utils::blaschke_cc(z, z_poles);
 
-                    // For B to K 
+                    // For B to K
                     const std::array<unsigned, 6> phi_parameters = {3, 3, 4, 3, 1, 4};
                     const std::vector<double> Mres = m_res;
 
@@ -2246,7 +2236,7 @@ namespace eos
                         polar<double>(abs_at_psi2S_plus, arg_at_psi2S_plus)
                     };
 
-                    // For B to K 
+                    // For B to K
                     const std::array<unsigned, 6> phi_parameters = {3, 3, 4, 3, 1, 4};
                     const std::vector<double> Mres = m_res;
 
@@ -2265,7 +2255,7 @@ namespace eos
                         polar<double>(abs_at_psi2S_plus, arg_at_psi2S_plus)
                     };
 
-                    // For B to K 
+                    // For B to K
                     const std::array<unsigned, 6> phi_parameters = {3, 3, 4, 3, 1, 4};
                     const std::vector<double> Mres = m_res;
 
@@ -2408,7 +2398,7 @@ namespace eos
                 }
         };
 
-        
+
 
 
     }

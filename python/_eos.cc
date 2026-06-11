@@ -538,7 +538,7 @@ BOOST_PYTHON_MODULE(_eos)
             .def("__eq__", &Unit::operator==);
 
     // WilsonCoefficients
-        class_<WilsonCoefficients<eos::BToS>>("BToSWilsonCoefficients", no_init)
+    class_<WilsonCoefficients<eos::BToS>>("BToSWilsonCoefficients", no_init)
             .def("c1", &WilsonCoefficients<eos::BToS>::c1)
             .def("c2", &WilsonCoefficients<eos::BToS>::c2)
             .def("c7", &WilsonCoefficients<eos::BToS>::c7)
