@@ -53,7 +53,7 @@ namespace eos
     BToKDileptonAmplitudes<tag::GvDV2020>::options
     {
         { "q"_ok, { "d"_ov, "u"_ov },  "d"_ov },
-        { "nonlocal-formfactor"_ok, { "GvDV2020"_ov, "GRvDV2022order5"_ov, "GRvDV2022order6"_ov, "GRV2026"_ov }, "GvDV2020"_ov }
+        { "nonlocal-formfactor"_ok, { "GvDV2020"_ov, "GRvDV2022order5"_ov, "GRvDV2022order6"_ov, "GRV2026"_ov, "GRV2026order6"_ov }, "GvDV2020"_ov }
     };
 
     BToKDilepton::DipoleFormFactors

@@ -6009,6 +6009,13 @@ groups:
           unit:     'GeV^-2'
           latex:    '$\Tilde{\chi}_{\mathrm{OPE}}$'
           comments: 'Dispersive bound in the OPE at t_s = -m_b^2, axial part, with resonance factor'
+      'b->sccbar::t_V@GRV2026' :
+          central: 10.445027650378242
+          min:     10.445027650378242
+          max:     10.445027650378242
+          unit:    'GeV^2'
+          latex:   '$s_\Gamma$'
+          comments: 'Subthreshold branch cut starting point. Default value: (m_Jpsi + m_pi)^2'
       'b->sccbar::bound@GvDV2020' :
           central: +1.0
           min:     +1.0
