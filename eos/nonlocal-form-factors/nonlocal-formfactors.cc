@@ -107,11 +107,22 @@ namespace eos
         {
             return z(complex<double>(q2, 0.0), s_plus, s_0);
         }
-
-        // Blaschke factor capturing the two poles for J/psi and psi(2S).
+    
+        // Blaschke factor capturing the two poles for J/psi and psi(2S). [OLD VERSION]
         complex<double> blaschke_cc(const complex<double> & z, const complex<double> & z_Jpsi, const complex<double> & z_psi2S)
         {
             return (z - z_Jpsi)/(1.0 - z * std::conj(z_Jpsi)) * (z - z_psi2S)/(1.0 - z * std::conj(z_psi2S));
+        }
+
+        // Blaschke factor for an arbitrary number of poles.
+        complex<double> blaschke_cc(const complex<double> & z, const std::vector<complex<double>> & z_poles)
+        {
+            complex<double> result(1.0, 0.0);
+            for (const auto & z_pole : z_poles)
+            {
+                result *= (z - z_pole) / (1.0 - z * std::conj(z_pole));
+            }
+            return result;
         }
     }
 
