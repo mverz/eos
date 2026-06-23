@@ -339,6 +339,21 @@ namespace eos
                         &BToKDilepton::differential_forward_backward_asymmetry,
                         std::make_tuple("q2")),
 
+                make_observable("B->Kll::a_l(q2)", R"(a_\ell(\bar{B}\to \bar{K}\ell^+\ell^-)(q^2))",
+                        Unit::GeV3(),
+                        &BToKDilepton::angular_coeff_a_l,
+                        std::make_tuple("q2")),
+
+                make_observable("B->Kll::b_l(q2)", R"(b_\ell(\bar{B}\to \bar{K}\ell^+\ell^-)(q^2))",
+                        Unit::GeV3(),
+                        &BToKDilepton::angular_coeff_b_l,
+                        std::make_tuple("q2")),
+
+                make_observable("B->Kll::c_l(q2)", R"(c_\ell(\bar{B}\to \bar{K}\ell^+\ell^-)(q^2))",
+                        Unit::GeV3(),
+                        &BToKDilepton::angular_coeff_c_l,
+                        std::make_tuple("q2")),
+
                 make_expression_observable("B->Kll::R_K(q2)", R"(R_K(q^2))",
                         Unit::None(),
                         R"(
