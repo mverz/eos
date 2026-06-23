@@ -46,6 +46,11 @@ namespace eos
             class AmplitudeGenerator;
             struct DipoleFormFactors;
 
+            // Differential angular coefficients
+            double angular_coeff_a_l(const double & q2) const;
+            double angular_coeff_b_l(const double & q2) const;
+            double angular_coeff_c_l(const double & q2) const;
+
             // Differential Observables
             double differential_branching_ratio(const double & q2) const;
             double differential_flat_term(const double & q2) const;

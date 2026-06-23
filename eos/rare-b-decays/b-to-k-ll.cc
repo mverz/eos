@@ -235,6 +235,24 @@ namespace eos
     }
 
     double
+    BToKDilepton::angular_coeff_a_l(const double & q2) const
+    {
+        return _imp->differential_angular_coefficients(q2).a_l;
+    }
+
+    double
+    BToKDilepton::angular_coeff_b_l(const double & q2) const
+    {
+        return _imp->differential_angular_coefficients(q2).b_l;
+    }
+
+    double
+    BToKDilepton::angular_coeff_c_l(const double & q2) const
+    {
+        return _imp->differential_angular_coefficients(q2).c_l;
+    }
+
+    double
     BToKDilepton::two_differential_decay_width(const double & q2, const double & c_theta_l_LHCb) const
     {
         AngularCoefficients a = _imp->differential_angular_coefficients(q2);
