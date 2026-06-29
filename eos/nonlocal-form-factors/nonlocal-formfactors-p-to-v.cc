@@ -1740,8 +1740,8 @@ namespace eos
 
             public:
                 GRV2026(const Parameters & p, const Options & o) :
-                    form_factors(FormFactorFactory<PToV>::create(stringify(Process_::label) + "::" + o.get("form-factors"_ok, "BSZ2015"), p)),
-                    opt_q(o, "q"_ok, { "u", "d", "s" }),
+                    form_factors(FormFactorFactory<PToV>::create(stringify(Process_::label) + "::" + o.get("form-factors"_ok, "BSZ2015"_ov).str(), p)),
+                    opt_q(o, "q"_ok, { "u"_ov, "d"_ov, "s"_ov }),
 
                     re_at_m7_perp(p[stringify(Process_::label) + "ccbar::Re_Hhat_at_m7_perp@GRvDV2022"], *this),
                     im_at_m7_perp(p[stringify(Process_::label) + "ccbar::Im_Hhat_at_m7_perp@GRvDV2022"], *this),
@@ -2451,7 +2451,7 @@ namespace eos
                 }
         };
 
-        
+
 
 
 

@@ -1447,7 +1447,7 @@ namespace eos
                 const SzegoPolynomial<interpolation_order> orthonormal_polynomials;
 
                 GRV2026(const Parameters & p, const Options & o) :
-                    form_factors(FormFactorFactory<PToP>::create(stringify(Process_::label) + "::" + o.get("form-factors"_ok, "BSZ2015"), p)),
+                    form_factors(FormFactorFactory<PToP>::create(stringify(Process_::label) + "::" + o.get("form-factors"_ok, "BSZ2015"_ov).str(), p)),
 
                     re_at_m7_plus(p[stringify(Process_::label) + "ccbar::Re_Hhat_at_m7_plus@GRvDV2022"], *this),
                     im_at_m7_plus(p[stringify(Process_::label) + "ccbar::Im_Hhat_at_m7_plus@GRvDV2022"], *this),
@@ -2005,7 +2005,7 @@ namespace eos
                 const SzegoPolynomial<interpolation_order> orthonormal_polynomials;
 
                 GRV2026order6(const Parameters & p, const Options & o) :
-                    form_factors(FormFactorFactory<PToP>::create(stringify(Process_::label) + "::" + o.get("form-factors"_ok, "BSZ2015"), p)),
+                    form_factors(FormFactorFactory<PToP>::create(stringify(Process_::label) + "::" + o.get("form-factors"_ok, "BSZ2015"_ov).str(), p)),
 
                     re_at_m7_plus(p[stringify(Process_::label) + "ccbar::Re_Hhat_at_m7_plus@GRvDV2022"], *this),
                     im_at_m7_plus(p[stringify(Process_::label) + "ccbar::Im_Hhat_at_m7_plus@GRvDV2022"], *this),
