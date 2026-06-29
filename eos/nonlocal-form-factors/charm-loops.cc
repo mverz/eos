@@ -1513,7 +1513,7 @@ namespace eos
             m_c(p["mass::c"], u),
             mu(p["sb::mu"], u)
         {
-            model = Model::make(o.get("model"_ok, "SM"), p, o);
+            model = Model::make(o.get("model"_ok, "SM"_ov), p, o);
             auto i = contribution_map.find(opt_contribution.value());
             if (i == contribution_map.end())
                 throw InternalError("Unknown charm loops option: " + opt_contribution.value());
