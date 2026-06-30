@@ -22,6 +22,7 @@ import os
 import sys
 import yaml
 import inspect
+import math
 from collections import Counter
 from dataclasses import asdict
 from eos.analysis_file_description import PriorComponent, LikelihoodComponent, PosteriorDescription, \
@@ -102,6 +103,31 @@ class AnalysisFile:
                 eos.Observables().insert(o.name, o.latex, eos.Unit(o.unit), eos.Options(**o.options), o.expression)
                 eos.info(f'Inserted observable: { o.name }')
             eos.completed(f'... finished inserting {len(self._obs)} custom observables')
+
+        # Insert one hardcoded runtime SignalPDF
+        eos.inprogress('Inserting hardcoded runtime SignalPDF ...')
+        rt_pdf_name = 'B->Kll::RTdiffdecayrate(q2)'
+        rt_norm_name = 'B->Kll::RTNormOne(q2_min,q2_max)'
+        hardcoded_options = eos.Options({'tag':'GvDV2020','form-factors':'G2026', 'nonlocal-formfactor':'GRV2026order6'})
+
+        eos.Observables().insert(
+            rt_norm_name,
+            'runtime constant normalization for unbinned tests',
+            eos.Unit('1'),
+            eos.Options(),
+            '1.0 + 0.0 * ({q2_min} + {q2_max})'
+        )
+        eos.info(f'Inserted hardcoded normalization observable: {rt_norm_name}')
+
+        eos.SignalPDFs().insert(
+            rt_pdf_name,
+            'hardcoded runtime test PDF inserted by AnalysisFile',
+            hardcoded_options,
+            'B->Kll::differential-decay-rate', ['q2'],
+            rt_norm_name, ['q2_min', 'q2_max']
+        )
+        eos.info(f'Inserted hardcoded runtime SignalPDF: {rt_pdf_name}')
+        eos.completed('... finished inserting hardcoded runtime SignalPDF')
 
         if 'parameters' not in self.input_data:
             self._params = []
@@ -191,6 +217,49 @@ class AnalysisFile:
 
         global_options = posterior.global_options
         fixed_parameters = posterior.fixed_parameters
+
+        unbinned_options = dict(global_options)
+
+        # Hardcoded unbinned likelihood for B->Kll in the window
+        # sqrt(q2) in (1.5, 2.5) GeV, i.e. q2 in (2.25, 6.25) GeV^2.
+        eos.inprogress('Creating hardcoded Unbinned1D likelihood block ...')
+
+        cache = eos.ObservableCache(parameters)
+        q2_min = 1.5 ** 2
+        q2_max = 2.5 ** 2
+        n_grid = 250
+        dq2 = (q2_max - q2_min) / (n_grid - 1)
+
+        kinematics = [
+            eos.Kinematics({'q2': q2_min + i * dq2, 'q2_min': q2_min, 'q2_max': q2_max})
+            for i in range(n_grid)
+        ]
+
+        # Gaussian detector resolution in q2, sampled on the same grid.
+        sigma_q2 = 0.12
+        center = (n_grid - 1) / 2.0
+        resolution = [
+            math.exp(-0.5 * (((i - center) * dq2) / sigma_q2) ** 2)
+            for i in range(n_grid)
+        ]
+        normalization = sum(resolution)
+        resolution = [r / normalization for r in resolution]
+
+        # Representative pseudo-observations inside the same q2 window.
+        q2_observations = [2.35, 2.55, 2.80, 3.05, 3.30, 3.60, 3.90, 4.20, 4.55, 4.90, 5.20, 5.60, 6.05]
+        observations = [eos.Kinematics({'q2': q2}) for q2 in q2_observations]
+
+        llh_block = eos.LogLikelihoodBlock.Unbinned1D(
+            cache,
+            "B->Kll::RTdiffdecayrate(q2)",
+            kinematics,
+            eos.Options(**unbinned_options),
+            resolution,
+            observations
+        )
+        external_likelihood.append(llh_block)
+        eos.info(f'Added hardcoded Unbinned1D block with {len(q2_observations)} pseudo-events in q2=[{q2_min}, {q2_max}] GeV^2')
+        eos.completed('... finished creating hardcoded Unbinned1D likelihood block')
 
         #  Convert back to dictionaries (for now) as that is what Analysis expects
         prior = [ asdict(pc) for pc in prior]
