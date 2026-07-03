@@ -230,7 +230,7 @@ class AnalysisFile:
         # LHCb Resolution data (for now only in region2 and in particular [1.8, 2.5] GeV)
         q2_min = 1.8**2
         q2_max = 2.51**2
-        ngridpoints = 100
+        ngridpoints = 50
         gridstep = (q2_max - q2_min) / (ngridpoints - 1)
 
         q2grid = [q2_min + i * gridstep for i in range(ngridpoints)]
@@ -257,8 +257,19 @@ class AnalysisFile:
         resolution2 = [model_res2(np.sqrt(q2)) for q2 in q2grid]
 
         # Representative pseudo-observations inside the same q2 window.
-        q2_observations = [3.90, 4.20, 4.55, 4.90, 5.20, 5.60, 6.24]
-        observations = [eos.Kinematics({'q2': q2}) for q2 in q2_observations]
+        lhcb_data = np.loadtxt(
+            "/mt/external/mverzeletti/Repositories/eos/upbsll/py/LHCb-data.csv",
+            delimiter=",",
+            skiprows=1,
+            unpack=True,
+            dtype=np.float64,
+            usecols=(0)
+        )
+
+        lhcb_data = (lhcb_data/1000.0)**2
+        lhcb_data = lhcb_data[(lhcb_data>q2_min) & (lhcb_data<q2_max)]
+
+        observations = [eos.Kinematics({'q2': q2}) for q2 in lhcb_data]
 
         llh_block = eos.LogLikelihoodBlock.Unbinned1D(
             cache,
@@ -269,7 +280,7 @@ class AnalysisFile:
             observations
         )
         external_likelihood.append(llh_block)
-        eos.info(f'Added hardcoded Unbinned1D block with {len(q2_observations)} pseudo-events in q2=[{q2_min}, {q2_max}] GeV^2')
+        eos.info(f'Added hardcoded Unbinned1D block with {len(observations)} pseudo-events in q2=[{q2_min}, {q2_max}] GeV^2')
         eos.completed('... finished creating hardcoded Unbinned1D likelihood block')
 
         # Convert back to dictionaries

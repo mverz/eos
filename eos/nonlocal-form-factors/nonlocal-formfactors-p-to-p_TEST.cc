@@ -191,7 +191,7 @@ class NonlocalFormFactorGRV2026Test :
                 p["B->Kccbar::Re_Hhat_at_t0_plus@GRvDV2022"] =  0.11;
                 p["B->Kccbar::Im_Hhat_at_t0_plus@GRvDV2022"] = -0.12;
 
-                Options o = { { "model"_ok, "WET" } };
+                Options o = { { "model"_ok, "WET"_ov } };
 
                 auto nff = NonlocalFormFactor<PToP>::make("B->K::GRV2026", p, o);
 
