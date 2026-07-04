@@ -279,9 +279,13 @@ class AnalysisFile:
             resolution2,
             observations
         )
-        external_likelihood.append(llh_block)
-        eos.info(f'Added hardcoded Unbinned1D block with {len(observations)} pseudo-events in q2=[{q2_min}, {q2_max}] GeV^2')
-        eos.completed('... finished creating hardcoded Unbinned1D likelihood block')
+        unbinned_flag = float(fixed_parameters.get('B->K::UnbinnedFlag'))
+        if (unbinned_flag):
+            external_likelihood.append(llh_block)
+            eos.info(f'Added hardcoded Unbinned1D block with {len(observations)} pseudo-events in q2=[{q2_min:.3f}, {q2_max:.3f}] GeV^2')
+            eos.completed('... finished creating hardcoded Unbinned1D likelihood block')
+        else:
+            eos.completed('... skipped creating hardcoded Unbinned1D likelihood block since B->K::UnbinnedFlag = False')
 
         # Convert back to dictionaries
         prior = [ asdict(pc) for pc in prior]
