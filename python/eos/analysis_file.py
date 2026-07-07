@@ -230,10 +230,15 @@ class AnalysisFile:
         # LHCb Resolution data (for now only in region2 and in particular [1.8, 2.5] GeV)
         q2_min = 1.8**2
         q2_max = 2.51**2
-        ngridpoints = 50
-        gridstep = (q2_max - q2_min) / (ngridpoints - 1)
 
-        q2grid = [q2_min + i * gridstep for i in range(ngridpoints)]
+        padding_frac = 0.3
+        q2_min_grid = q2_min - padding_frac * (q2_max - q2_min)
+        q2_max_grid = q2_max + padding_frac * (q2_max - q2_min)
+
+        ngridpoints = 100
+        gridstep = (q2_max_grid - q2_min_grid) / (ngridpoints - 1)
+
+        q2grid = [q2_min_grid + i * gridstep for i in range(ngridpoints)]
 
         kinematics = [
             eos.Kinematics({'q2': q2, 'q2_min': q2_min, 'q2_max': q2_max})
