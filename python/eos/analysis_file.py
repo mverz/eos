@@ -108,17 +108,8 @@ class AnalysisFile:
         # Insert one hardcoded runtime SignalPDF
         eos.inprogress('Inserting hardcoded runtime SignalPDF ...')
         rt_pdf_name = 'B->Kll::RTdiffdecayrate(q2)'
-        rt_norm_name = 'B->Kll::RTNormOne(q2_min,q2_max)'
+        rt_norm_name = 'B->Kll::RTNorm(q2_min,q2_max)'
         hardcoded_options = eos.Options({'tag':'GvDV2020','form-factors':'G2026', 'nonlocal-formfactor':'GRV2026', 'model':'WET'})
-
-        eos.Observables().insert(
-            rt_norm_name,
-            'runtime constant normalization for unbinned tests',
-            eos.Unit('1'),
-            eos.Options(),
-            '1.0 + 0.0 * ({q2_min} + {q2_max})'
-        )
-        eos.info(f'Inserted hardcoded normalization observable: {rt_norm_name}')
 
         eos.SignalPDFs().insert(
             rt_pdf_name,
