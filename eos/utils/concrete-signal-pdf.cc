@@ -17,6 +17,7 @@
  * Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include <eos/maths/integrate.hh>
 #include <eos/utils/concrete-signal-pdf.hh>
 #include <eos/utils/wrapped_forward_iterator-impl.hh>
 
@@ -29,7 +30,8 @@ namespace eos
         _kinematics(kinematics),
         _options(options),
         _unnormalized_pdf(Observable::make(unnormalized_pdf, parameters, kinematics, options)),
-        _normalization(Observable::make(normalization, parameters, kinematics, options))
+        _normalization(Observable::make(normalization, parameters, kinematics, options)),
+        _integration_variable("")
     {
         if (_unnormalized_pdf == nullptr)
         {
@@ -39,6 +41,22 @@ namespace eos
         if (_normalization == nullptr)
         {
             throw InternalError("ConcreteSignalPDF: failed to construct normalization from " + normalization.str());
+        }
+    }
+
+    ConcreteSignalPDF::ConcreteSignalPDF(const QualifiedName & name, const Parameters & parameters, const Kinematics & kinematics, const Options & options,
+                                         const QualifiedName & unnormalized_pdf, const std::string & integration_variable) :
+        _name(name),
+        _parameters(parameters),
+        _kinematics(kinematics),
+        _options(options),
+        _unnormalized_pdf(Observable::make(unnormalized_pdf, parameters, kinematics, options)),
+        _normalization(nullptr),
+        _integration_variable(integration_variable)
+    {
+        if (_unnormalized_pdf == nullptr)
+        {
+            throw InternalError("ConcreteSignalPDF: failed to construct unnormalized pdf from " + unnormalized_pdf.str());
         }
     }
 
@@ -73,6 +91,37 @@ namespace eos
     double
     ConcreteSignalPDF::normalization() const
     {
+        if (_normalization == nullptr)
+        {
+            // Numerical integration of the PDF over the kinematic range
+
+            const std::string variable_name = _integration_variable;
+
+            const double v_min = _kinematics[variable_name + "_min"].evaluate();
+            const double v_max = _kinematics[variable_name + "_max"].evaluate();
+
+            Kinematics kinematics = _kinematics.clone();
+            auto       v          = kinematics[variable_name];
+
+            auto unnormalized_function = Observable::make(_unnormalized_pdf->name(), _parameters, kinematics, _options);
+
+            const auto integrand = [&](const double & x) -> double
+            {
+                v = x;
+                return unnormalized_function->evaluate();
+            };
+
+            const auto   cfg  = GSL::QAGS::Config().epsabs(0.0).epsrel(1e-4).key(1);
+            const double norm = integrate<GSL::QAGS>(integrand, v_min, v_max, cfg);
+
+            if (norm > 0.0)
+            {
+                return std::log(norm);
+            }
+
+            return -std::numeric_limits<double>::infinity();
+        }
+
         if (auto result = _normalization->evaluate(); result > 0.0) [[likely]]
         {
             return std::log(result);
@@ -114,12 +163,20 @@ namespace eos
     DensityPtr
     ConcreteSignalPDF::clone() const
     {
+        if (_normalization == nullptr)
+        {
+            return DensityPtr(new ConcreteSignalPDF(_name, _parameters.clone(), _kinematics.clone(), _options, _unnormalized_pdf->name(), _integration_variable));
+        }
         return DensityPtr(new ConcreteSignalPDF(_name, _parameters.clone(), _kinematics.clone(), _options, _unnormalized_pdf->name(), _normalization->name()));
     }
 
     DensityPtr
     ConcreteSignalPDF::clone(const Parameters & parameters) const
     {
+        if (_normalization == nullptr)
+        {
+            return DensityPtr(new ConcreteSignalPDF(_name, parameters, _kinematics.clone(), _options, _unnormalized_pdf->name(), _integration_variable));
+        }
         return DensityPtr(new ConcreteSignalPDF(_name, parameters, _kinematics.clone(), _options, _unnormalized_pdf->name(), _normalization->name()));
     }
 
@@ -143,6 +200,18 @@ namespace eos
         _default_options(default_options),
         _numerator(numerator),
         _normalization(normalization),
+        _numerator_kinematic_names(numerator_kinematic_names),
+        _normalization_kinematic_names(normalization_kinematic_names)
+    {
+    }
+
+    ConcreteSignalPDFEntry::ConcreteSignalPDFEntry(const QualifiedName & name, const std::string & description, const Options & default_options, const QualifiedName & numerator,
+                                                   const std::vector<std::string> & numerator_kinematic_names, const std::vector<std::string> & normalization_kinematic_names) :
+        _name(name),
+        _description(description),
+        _default_options(default_options),
+        _numerator(numerator),
+        _normalization(QualifiedName("null::null")),
         _numerator_kinematic_names(numerator_kinematic_names),
         _normalization_kinematic_names(normalization_kinematic_names)
     {
@@ -189,6 +258,10 @@ namespace eos
     SignalPDFPtr
     ConcreteSignalPDFEntry::make(const Parameters & parameters, const Kinematics & kinematics, const Options & options) const
     {
+        if (_normalization.str() == "null::null")
+        {
+            return SignalPDFPtr(new ConcreteSignalPDF(_name, parameters, kinematics, _default_options + options, _numerator, _numerator_kinematic_names.front()));
+        }
         return SignalPDFPtr(new ConcreteSignalPDF(_name, parameters, kinematics, _default_options + options, _numerator, _normalization));
     }
 

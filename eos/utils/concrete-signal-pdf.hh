@@ -268,12 +268,17 @@ namespace eos
 
             ObservablePtr _normalization;
 
+            std::string _integration_variable;
+
             // TODO: remove
             std::vector<ParameterDescription> _descriptions;
 
         public:
             ConcreteSignalPDF(const QualifiedName & name, const Parameters & parameters, const Kinematics & kinematics, const Options & options,
                               const QualifiedName & unnormalized_pdf, const QualifiedName & normalization);
+
+            ConcreteSignalPDF(const QualifiedName & name, const Parameters & parameters, const Kinematics & kinematics, const Options & options,
+                              const QualifiedName & unnormalized_pdf, const std::string & integration_variable);
 
             virtual const QualifiedName & name() const;
 
@@ -323,6 +328,10 @@ namespace eos
             ConcreteSignalPDFEntry(const QualifiedName & name, const std::string & description, const Options & default_options, const QualifiedName & numerator,
                                    const QualifiedName & normalization, const std::vector<std::string> & numerator_kinematic_names,
                                    const std::vector<std::string> & normalization_kinematic_names);
+
+            ConcreteSignalPDFEntry(const QualifiedName & name, const std::string & description, const Options & default_options, const QualifiedName & numerator,
+                                   const std::vector<std::string> & numerator_kinematic_names, const std::vector<std::string> & normalization_kinematic_names);
+
             ~ConcreteSignalPDFEntry();
 
             virtual const QualifiedName &                              name() const;

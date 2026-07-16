@@ -241,6 +241,9 @@ namespace eos
             void insert(const QualifiedName & name, const std::string & description, const Options & options, const QualifiedName & numerator,
                         const std::vector<std::string> & numerator_kinematic_names, const QualifiedName & normalization,
                         const std::vector<std::string> & normalization_kinematic_names) const;
+
+            void insert(const QualifiedName & name, const std::string & description, const Options & options, const QualifiedName & numerator,
+                        const std::vector<std::string> & numerator_kinematic_names, const std::vector<std::string> & normalization_kinematic_names) const;
     };
 
     extern template class WrappedForwardIterator<SignalPDFs::SignalPDFIteratorTag, const std::pair<const QualifiedName, SignalPDFEntryPtr>>;

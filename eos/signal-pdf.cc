@@ -340,4 +340,36 @@ namespace eos
 
         SignalPDFEntries::instance()->insert_or_assign(name, std::shared_ptr<const SignalPDFEntry>(entry));
     }
+
+    void
+    SignalPDFs::insert(const QualifiedName & name, const std::string & description, const Options & options, const QualifiedName & numerator,
+                       const std::vector<std::string> & numerator_kinematic_names, const std::vector<std::string> & normalization_kinematic_names) const
+    {
+        const auto & observable_entries = ObservableEntries::instance()->entries();
+
+        // the numerator must reference known observables; fail fast otherwise
+        if (observable_entries.end() == observable_entries.find(numerator))
+        {
+            throw UnknownObservableError("Cannot create SignalPDF '" + name.str() + "': its numerator '" + numerator.str() + "' is not a known observable");
+        }
+
+        // each sampling variable 'v' (a numerator kinematic variable) should have matching bounds 'v_min' and 'v_max'
+        // among the normalization kinematic variables; the Python sampling layer relies on this convention, so warn if it is not met
+        for (const auto & variable : numerator_kinematic_names)
+        {
+            for (const auto & bound : { variable + "_min", variable + "_max" })
+            {
+                if (normalization_kinematic_names.end() == std::find(normalization_kinematic_names.begin(), normalization_kinematic_names.end(), bound))
+                {
+                    Log::instance()->message("[SignalPDFs.insert]", ll_warning)
+                            << "SignalPDF '" << name.str() << "': the normalization is missing the bound '" << bound << "' for the sampling variable '" << variable
+                            << "'; sampling from this PDF may not work as expected";
+                }
+            }
+        }
+
+        SignalPDFEntry * entry = new ConcreteSignalPDFEntry(name, description, options, numerator, numerator_kinematic_names, normalization_kinematic_names);
+
+        SignalPDFEntries::instance()->insert_or_assign(name, std::shared_ptr<const SignalPDFEntry>(entry));
+    }
 } // namespace eos

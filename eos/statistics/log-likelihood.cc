@@ -1204,6 +1204,11 @@ namespace eos
             // observable and evaluated once per likelihood evaluation. normalization_id addresses it.
             ObservableCache::ObservableId normalization_id;
 
+            // false: normalization is computed numerically.
+            // normalization_fallback is the SignalPDF used to compute the normalization numerically if bool is false.
+            bool normalization_is_cached;
+            SignalPDFPtr normalization_fallback;
+
             std::vector<double> resolution_data;
 
             // The events that were actually observed, expressed as kinematic variables.
@@ -1243,6 +1248,8 @@ namespace eos
                 pdf_name(pdf_name),
                 kinematics_data(kinematics),
                 options(options),
+                normalization_is_cached(false),
+                normalization_fallback(nullptr),
                 resolution_data(resolution),
                 observations_data(observations),
                 dimensions(dimensions),
@@ -1262,6 +1269,9 @@ namespace eos
                     SignalPDFPtr signal_pdf = SignalPDF::make(pdf_name, cache.parameters(), k, options);
                     unnormalized_pdfs.push_back(signal_pdf->unnormalized_pdf());
 
+                    if (! normalization_fallback)
+                        normalization_fallback = signal_pdf;
+
                     // The normalization depends only on the (constant) integration bounds, so it is the
                     // same for every grid point; capture it once from the first grid point's PDF.
                     if (! normalization_observable)
@@ -1271,7 +1281,11 @@ namespace eos
 
                 // Register the normalization as a single cached observable. The cache evaluates it once
                 // per likelihood evaluation (on update()); evaluate() reads it back via normalization_id.
-                normalization_id = this->cache.add(normalization_observable);
+                if (normalization_observable)
+                {
+                    normalization_id = this->cache.add(normalization_observable);
+                    normalization_is_cached = true;
+                }
 
                 // Pre-compute the DFT of the resolution function.
                 std::copy(resolution.begin(), resolution.end(),
@@ -1414,7 +1428,9 @@ namespace eos
                 // sampling variable) to yield a proper probability density. The normalization is the same
                 // for every observation and is evaluated once per likelihood evaluation by the cache; a
                 // non-positive normalization leaves the PDF undefined and is treated as zero probability.
-                const double normalization = cache[normalization_id];
+                const double normalization = normalization_is_cached
+                    ? cache[normalization_id]
+                    : std::exp(normalization_fallback->normalization());
                 if (normalization <= 0.0) [[unlikely]]
                     return -std::numeric_limits<double>::infinity();
                 const double log_normalization = std::log(normalization);
