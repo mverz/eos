@@ -108,7 +108,7 @@ class AnalysisFile:
         # Insert one hardcoded runtime SignalPDF
         eos.inprogress('Inserting hardcoded runtime SignalPDF ...')
         rt_pdf_name = 'B->Kll::RTdiffdecayrate(q2)'
-        rt_norm_name = 'B->Kll::RTNorm(q2_min,q2_max)'
+        #rt_norm_name = 'B->Kll::RTNorm(q2_min,q2_max)'
         #num_obs_name = 'B->Kll::eff-differential-decay-rate'
         num_obs_name = 'B->Kll::unbinned-debug'
         hardcoded_options = eos.Options({'tag':'GvDV2020','form-factors':'G2026', 'nonlocal-formfactor':'GRV2026', 'model':'WET'})
@@ -117,8 +117,7 @@ class AnalysisFile:
             rt_pdf_name,
             'hardcoded runtime PDF inserted by AnalysisFile',
             hardcoded_options,
-            num_obs_name, ['q2'],
-            rt_norm_name, ['q2_min', 'q2_max']
+            num_obs_name, ['q2'], ['q2_min', 'q2_max']
         )
         eos.info(f'Inserted hardcoded runtime SignalPDF: {rt_pdf_name}')
         eos.completed('... finished inserting hardcoded runtime SignalPDF')
