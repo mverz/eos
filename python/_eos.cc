@@ -1137,10 +1137,20 @@ BOOST_PYTHON_MODULE(_eos)
     // SignalPDFs
     ::impl::std_pair_to_python_converter<const QualifiedName, SignalPDFEntryPtr> converter_signalpdfs_iter;
     ::impl::iterable_to_std_vector_converter<std::string>                        iterable_to_std_vector_converter_string;
+
+    using SignalPDFsInsertWithNormalization = void (SignalPDFs::*)(const QualifiedName &, const std::string &, const Options &, const QualifiedName &,
+                                                                   const std::vector<std::string> &, const QualifiedName &, const std::vector<std::string> &) const;
+
+    using SignalPDFsInsertAutoNormalization = void (SignalPDFs::*)(const QualifiedName &, const std::string &, const Options &, const QualifiedName &,
+                                                                   const std::vector<std::string> &, const std::vector<std::string> &) const;
+
+    SignalPDFsInsertWithNormalization signal_pdfs_insert_with_normalization = &SignalPDFs::insert;
+    SignalPDFsInsertAutoNormalization signal_pdfs_insert_auto_normalization = &SignalPDFs::insert;
+
     class_<SignalPDFs>("_SignalPDFs")
             .def("__getitem__", &SignalPDFs::operator[])
             .def("__iter__", range(&SignalPDFs::begin, &SignalPDFs::end))
-            .def("insert", &SignalPDFs::insert, R"(
+            .def("insert", signal_pdfs_insert_with_normalization, R"(
             Insert a new signal PDF to EOS, built at run time from two existing observables.
 
             :param name: The name of the new signal PDF.
@@ -1159,6 +1169,8 @@ BOOST_PYTHON_MODULE(_eos)
             :type normalization_kinematic_variables: list of str
         )",
                  args("name", "description", "options", "numerator", "numerator_kinematic_variables", "normalization", "normalization_kinematic_variables"))
+            .def("insert", signal_pdfs_insert_auto_normalization,
+                 args("name", "description", "options", "numerator", "numerator_kinematic_variables", "normalization_kinematic_variables"))
             .def("sections", range(&SignalPDFs::begin_sections, &SignalPDFs::end_sections));
 
     // Analytic Charm Loops
