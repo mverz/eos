@@ -343,7 +343,8 @@ namespace eos
 
     void
     SignalPDFs::insert(const QualifiedName & name, const std::string & description, const Options & options, const QualifiedName & numerator,
-                       const std::vector<std::string> & numerator_kinematic_names, const std::vector<std::string> & normalization_kinematic_names) const
+                       const std::vector<std::string> & numerator_kinematic_names, const std::vector<std::string> & normalization_kinematic_names,
+                       const double & padding_fraction) const
     {
         const auto & observable_entries = ObservableEntries::instance()->entries();
 
@@ -368,7 +369,7 @@ namespace eos
             }
         }
 
-        SignalPDFEntry * entry = new ConcreteSignalPDFEntry(name, description, options, numerator, numerator_kinematic_names, normalization_kinematic_names);
+        SignalPDFEntry * entry = new ConcreteSignalPDFEntry(name, description, options, numerator, numerator_kinematic_names, normalization_kinematic_names, padding_fraction);
 
         SignalPDFEntries::instance()->insert_or_assign(name, std::shared_ptr<const SignalPDFEntry>(entry));
     }

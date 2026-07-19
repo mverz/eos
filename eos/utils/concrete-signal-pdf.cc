@@ -31,7 +31,8 @@ namespace eos
         _options(options),
         _unnormalized_pdf(Observable::make(unnormalized_pdf, parameters, kinematics, options)),
         _normalization(Observable::make(normalization, parameters, kinematics, options)),
-        _integration_variable("")
+        _integration_variable(""),
+        _padding_fraction(0.0)
     {
         if (_unnormalized_pdf == nullptr)
         {
@@ -45,14 +46,15 @@ namespace eos
     }
 
     ConcreteSignalPDF::ConcreteSignalPDF(const QualifiedName & name, const Parameters & parameters, const Kinematics & kinematics, const Options & options,
-                                         const QualifiedName & unnormalized_pdf, const std::string & integration_variable) :
+                                         const QualifiedName & unnormalized_pdf, const std::string & integration_variable, const double & padding_fraction) :
         _name(name),
         _parameters(parameters),
         _kinematics(kinematics),
         _options(options),
         _unnormalized_pdf(Observable::make(unnormalized_pdf, parameters, kinematics, options)),
         _normalization(nullptr),
-        _integration_variable(integration_variable)
+        _integration_variable(integration_variable),
+        _padding_fraction(padding_fraction)
     {
         if (_unnormalized_pdf == nullptr)
         {
@@ -94,11 +96,15 @@ namespace eos
         if (_normalization == nullptr)
         {
             // Numerical integration of the PDF over the kinematic range
+            // corrected to be shrinked by the padding fraction
 
             const std::string variable_name = _integration_variable;
 
-            const double v_min = _kinematics[variable_name + "_min"].evaluate();
-            const double v_max = _kinematics[variable_name + "_max"].evaluate();
+            const double v_min_padded = _kinematics[variable_name + "_min"].evaluate();
+            const double v_max_padded = _kinematics[variable_name + "_max"].evaluate();
+
+            const double v_min = (1 + _padding_fraction) / (1 + 2 * _padding_fraction) * v_min_padded + _padding_fraction / (1 + 2 * _padding_fraction) * v_max_padded;
+            const double v_max = v_min * (1 + _padding_fraction) / _padding_fraction - v_min_padded / _padding_fraction;
 
             Kinematics kinematics = _kinematics.clone();
             auto       v          = kinematics[variable_name];
@@ -165,7 +171,8 @@ namespace eos
     {
         if (_normalization == nullptr)
         {
-            return DensityPtr(new ConcreteSignalPDF(_name, _parameters.clone(), _kinematics.clone(), _options, _unnormalized_pdf->name(), _integration_variable));
+            return DensityPtr(
+                    new ConcreteSignalPDF(_name, _parameters.clone(), _kinematics.clone(), _options, _unnormalized_pdf->name(), _integration_variable, _padding_fraction));
         }
         return DensityPtr(new ConcreteSignalPDF(_name, _parameters.clone(), _kinematics.clone(), _options, _unnormalized_pdf->name(), _normalization->name()));
     }
@@ -175,7 +182,7 @@ namespace eos
     {
         if (_normalization == nullptr)
         {
-            return DensityPtr(new ConcreteSignalPDF(_name, parameters, _kinematics.clone(), _options, _unnormalized_pdf->name(), _integration_variable));
+            return DensityPtr(new ConcreteSignalPDF(_name, parameters, _kinematics.clone(), _options, _unnormalized_pdf->name(), _integration_variable, _padding_fraction));
         }
         return DensityPtr(new ConcreteSignalPDF(_name, parameters, _kinematics.clone(), _options, _unnormalized_pdf->name(), _normalization->name()));
     }
@@ -206,14 +213,16 @@ namespace eos
     }
 
     ConcreteSignalPDFEntry::ConcreteSignalPDFEntry(const QualifiedName & name, const std::string & description, const Options & default_options, const QualifiedName & numerator,
-                                                   const std::vector<std::string> & numerator_kinematic_names, const std::vector<std::string> & normalization_kinematic_names) :
+                                                   const std::vector<std::string> & numerator_kinematic_names, const std::vector<std::string> & normalization_kinematic_names,
+                                                   const double & padding_fraction) :
         _name(name),
         _description(description),
         _default_options(default_options),
         _numerator(numerator),
         _normalization(QualifiedName("null::null")),
         _numerator_kinematic_names(numerator_kinematic_names),
-        _normalization_kinematic_names(normalization_kinematic_names)
+        _normalization_kinematic_names(normalization_kinematic_names),
+        _padding_fraction(padding_fraction)
     {
     }
 
@@ -260,7 +269,8 @@ namespace eos
     {
         if (_normalization.str() == "null::null")
         {
-            return SignalPDFPtr(new ConcreteSignalPDF(_name, parameters, kinematics, _default_options + options, _numerator, _numerator_kinematic_names.front()));
+            return SignalPDFPtr(
+                    new ConcreteSignalPDF(_name, parameters, kinematics, _default_options + options, _numerator, _numerator_kinematic_names.front(), _padding_fraction));
         }
         return SignalPDFPtr(new ConcreteSignalPDF(_name, parameters, kinematics, _default_options + options, _numerator, _normalization));
     }

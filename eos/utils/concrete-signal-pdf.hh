@@ -270,6 +270,8 @@ namespace eos
 
             std::string _integration_variable;
 
+            double _padding_fraction;
+
             // TODO: remove
             std::vector<ParameterDescription> _descriptions;
 
@@ -278,7 +280,7 @@ namespace eos
                               const QualifiedName & unnormalized_pdf, const QualifiedName & normalization);
 
             ConcreteSignalPDF(const QualifiedName & name, const Parameters & parameters, const Kinematics & kinematics, const Options & options,
-                              const QualifiedName & unnormalized_pdf, const std::string & integration_variable);
+                              const QualifiedName & unnormalized_pdf, const std::string & integration_variable, const double & padding_fraction);
 
             virtual const QualifiedName & name() const;
 
@@ -324,13 +326,16 @@ namespace eos
 
             std::vector<std::string> _normalization_kinematic_names;
 
+            double _padding_fraction;
+
         public:
             ConcreteSignalPDFEntry(const QualifiedName & name, const std::string & description, const Options & default_options, const QualifiedName & numerator,
                                    const QualifiedName & normalization, const std::vector<std::string> & numerator_kinematic_names,
                                    const std::vector<std::string> & normalization_kinematic_names);
 
             ConcreteSignalPDFEntry(const QualifiedName & name, const std::string & description, const Options & default_options, const QualifiedName & numerator,
-                                   const std::vector<std::string> & numerator_kinematic_names, const std::vector<std::string> & normalization_kinematic_names);
+                                   const std::vector<std::string> & numerator_kinematic_names, const std::vector<std::string> & normalization_kinematic_names,
+                                   const double & padding_fraction);
 
             ~ConcreteSignalPDFEntry();
 

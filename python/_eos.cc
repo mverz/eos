@@ -1142,7 +1142,7 @@ BOOST_PYTHON_MODULE(_eos)
                                                                    const std::vector<std::string> &, const QualifiedName &, const std::vector<std::string> &) const;
 
     using SignalPDFsInsertAutoNormalization = void (SignalPDFs::*)(const QualifiedName &, const std::string &, const Options &, const QualifiedName &,
-                                                                   const std::vector<std::string> &, const std::vector<std::string> &) const;
+                                                                   const std::vector<std::string> &, const std::vector<std::string> &, const double &) const;
 
     SignalPDFsInsertWithNormalization signal_pdfs_insert_with_normalization = &SignalPDFs::insert;
     SignalPDFsInsertAutoNormalization signal_pdfs_insert_auto_normalization = &SignalPDFs::insert;
@@ -1170,7 +1170,7 @@ BOOST_PYTHON_MODULE(_eos)
         )",
                  args("name", "description", "options", "numerator", "numerator_kinematic_variables", "normalization", "normalization_kinematic_variables"))
             .def("insert", signal_pdfs_insert_auto_normalization,
-                 args("name", "description", "options", "numerator", "numerator_kinematic_variables", "normalization_kinematic_variables"))
+                 args("name", "description", "options", "numerator", "numerator_kinematic_variables", "normalization_kinematic_variables", "padding_fraction"))
             .def("sections", range(&SignalPDFs::begin_sections, &SignalPDFs::end_sections));
 
     // Analytic Charm Loops
