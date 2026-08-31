@@ -1409,16 +1409,20 @@ namespace eos
 
                 // Subthreshold branch cut starting point and the ccbar poles below it.
                 UsedParameter s_G;
-                const std::vector<double> m_Gamma;
+
+                const double decay_w_Jpsi = 92.9 * 1e-6; // width of J/psi in GeV
+
+                const std::vector<complex<double>> m_Gamma;
                 const std::vector<complex<double>> z_poles; // z(m ^2) for m < s_G in m_Gamma
                 const std::vector<double> m_res; // m > s_G in m_Gamma
 
-                static std::vector<complex<double>> make_z_poles(const std::vector<double> & m_Gamma, double sG, double t0)
+                static std::vector<complex<double>> make_z_poles(const std::vector<complex<double>> & m_Gamma, double sG, double t0)
                 {
                     std::vector<complex<double>> output;
                     for (const auto & m : m_Gamma)
                     {
-                        if (power_of<2>(m) < sG)
+                        // compare the real part of m
+                        if (power_of<2>(real(m)) < sG)
                         {
                             output.push_back(eos::nff_utils::z(power_of<2>(m), sG, t0));
                         }
@@ -1426,14 +1430,14 @@ namespace eos
                     return output;
                 }
 
-                static std::vector<double> make_m_res(const std::vector<double> & m_Gamma, double sG)
+                static std::vector<double> make_m_res(const std::vector<complex<double>> & m_Gamma, double sG)
                 {
                     std::vector<double> output;
                     for (const auto & m : m_Gamma)
                     {
-                        if (power_of<2>(m) > sG)
+                        if (power_of<2>(real(m)) > sG)
                         {
-                            output.push_back(m);
+                            output.push_back(real(m));
                         }
                     }
                     return output;
@@ -1475,6 +1479,8 @@ namespace eos
                     m_pi(p["mass::pi^0"], *this),
 
                     m_D0(p["mass::D^0"], *this),
+
+                    // To be set at the optimal value at analysis file level
                     t_0(p["b->sccbar::t_0"], *this),
 
                     t_s(p["b->sccbar::t_s"], *this),
@@ -1484,7 +1490,7 @@ namespace eos
 
                     s_G(p["b->sccbar::t_V@GRV2026"], *this),
                     m_Gamma({
-                        m_Jpsi(),
+                        m_Jpsi() - 0.5 * complex<double>(0, 1) * decay_w_Jpsi,
                         m_psi2S(),
                         m_Bs_star()
                     }),
@@ -1498,9 +1504,6 @@ namespace eos
                               0.0, // z(t_0) = 0.0 by construction
                               eos::nff_utils::z(power_of<2>(m_Jpsi), s_G(), t_0())}),
 
-                    // The parameters of the polynomial expension are computed using t0 = 4.0 and
-                    // the masses are set to mB = 5.279 and mK = 0.492 (same values as for local form-factors)
-                    // const SzegoPolynomial<interpolation_order> orthonormal_polynomials;
                     orthonormal_polynomials(SzegoPolynomial<interpolation_order>::FlatMeasure(M_PI))
                 {
                     this->uses(*form_factors);
@@ -1560,7 +1563,7 @@ namespace eos
                     for (const auto & m : Mres)
                     {
                         const double Mres2 = power_of<2>(m);
-                        const bool include_factor_Mres = (Mres2 > sG) && (Mres2 < sp);
+                        bool include_factor_Mres = (Mres2 > sG) && (Mres2 < sp);
                         if (include_factor_Mres)
                             factor_Mres *= (Mres2 - s) / power_of<2>(sqrt_sG_s + sqrt_sG_Q2);
                     }
@@ -1618,7 +1621,7 @@ namespace eos
                 // Residue of H at s = m_Jpsi2 computed as the residue wrt z -z_Jpsi divided by dz/ds evaluated at s = m_Jpsi2
                 inline complex<double> H_residue_jpsi(const std::array<unsigned, 6> & phi_parameters, const std::vector<double> & Mres, const std::array<complex<double>, interpolation_order + 1> & interpolation_values) const
                 {
-                    const double m_Jpsi2  = power_of<2>(m_Jpsi);
+                    const complex<double> m_Jpsi2  = power_of<2>(m_Jpsi() - 0.5 * complex<double>(0, 1) * decay_w_Jpsi);
                     const double m_psi2S2 = power_of<2>(m_psi2S);
 
                     const double s_0   = this->t_0();
@@ -1637,7 +1640,7 @@ namespace eos
                 // Residue of H at s = m_psi2S2 computed as the residue wrt z -z_psi2S divided by dz/ds evaluated at s = m_psi2S2
                 inline complex<double> H_residue_psi2s(const std::array<unsigned, 6> & phi_parameters, const std::vector<double> & Mres, const std::array<complex<double>, interpolation_order + 1> & interpolation_values) const
                 {
-                    const double m_Jpsi2  = power_of<2>(m_Jpsi);
+                    const complex<double> m_Jpsi2  = power_of<2>(m_Jpsi() - 0.5 * complex<double>(0, 1) * decay_w_Jpsi);
                     const double m_psi2S2 = power_of<2>(m_psi2S);
 
                     const double s_0   = this->t_0();
@@ -2117,7 +2120,7 @@ namespace eos
                     for (const auto & m : Mres)
                     {
                         const double Mres2 = power_of<2>(m);
-                        const bool include_factor_Mres = (Mres2 > sG) && (Mres2 < sp);
+                        bool include_factor_Mres = (Mres2 > sG) && (Mres2 < sp);
                         if (include_factor_Mres)
                             factor_Mres *= (Mres2 - s) / power_of<2>(sqrt_sG_s + sqrt_sG_Q2);
                     }
