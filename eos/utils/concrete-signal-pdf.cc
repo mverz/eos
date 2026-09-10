@@ -117,8 +117,61 @@ namespace eos
                 return unnormalized_function->evaluate();
             };
 
-            const auto   cfg  = GSL::QAGS::Config().epsabs(0.0).epsrel(1e-4).key(1);
-            const double norm = integrate<GSL::QAGS>(integrand, v_min, v_max, cfg);
+            // const auto   cfg  = GSL::QAGS::Config().epsabs(0.0).epsrel(1e-4).key(1);
+            // const double norm = integrate<GSL::QAGS>(integrand, v_min, v_max, cfg);
+
+            const auto trapezoidal_integral = [&](const double a, const double b, const unsigned n_points) -> double
+            {
+                if (b <= a)
+                {
+                    return 0.0;
+                }
+
+                const double h = (b - a) / (n_points - 1);
+
+                double integral = 0.0;
+
+                for (unsigned i = 0; i < n_points; ++i)
+                {
+                    const double x = a + i * h;
+
+                    v = x;
+
+                    const double y = unnormalized_function->evaluate();
+
+                    if (! std::isfinite(y))
+                    {
+                        std::cerr << "Bad PDF value at q2 = " << x << std::endl;
+                        throw std::runtime_error("Non-finite PDF");
+                    }
+
+                    // trapezoidal weights
+                    if (i == 0 || i == n_points - 1)
+                    {
+                        integral += 0.5 * y;
+                    }
+                    else
+                    {
+                        integral += y;
+                    }
+                }
+
+                return integral * h;
+            };
+
+            double norm = 0.0;
+
+            if (v_min < 9.0 && v_max > 10.1)
+            {
+                norm += trapezoidal_integral(v_min, 9.0, 125);
+                norm += trapezoidal_integral(9.0, 10.1, 400);
+                norm += trapezoidal_integral(10.1, v_max, 75);
+            }
+
+            if (v_max <= 9.0)
+            {
+                norm += trapezoidal_integral(v_min, v_max, 500);
+            }
 
             if (norm > 0.0)
             {
