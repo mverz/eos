@@ -5996,26 +5996,33 @@ groups:
           latex:    '$\chi_{\mathrm{OPE}}$'
           comments: 'Dispersive bound in the OPE at t_s = -m_b^2'
       'b->sccbar::chi_tilde_OPE_V@GRV2026' :
-          central: +5.796e-5
-          min:     +5.796e-5
-          max:     +5.796e-5
+          central: +5.640e-5
+          min:     +5.640e-5
+          max:     +5.640e-5
           unit:     'GeV^-2'
           latex:    '$\Tilde{\chi}_{\mathrm{OPE}}$'
           comments: 'Dispersive bound in the OPE at t_s = -m_b^2, vector part, with resonance factor'
       'b->sccbar::chi_tilde_OPE_A@GRV2026' :
-          central: +5.268e-5
-          min:     +5.268e-5
-          max:     +5.268e-5
+          central: +5.092e-5
+          min:     +5.092e-5
+          max:     +5.092e-5
           unit:     'GeV^-2'
           latex:    '$\Tilde{\chi}_{\mathrm{OPE}}$'
           comments: 'Dispersive bound in the OPE at t_s = -m_b^2, axial part, with resonance factor'
       'b->sccbar::t_V@GRV2026' :
-          central: 10.445027650378242
-          min:     10.445027650378242
-          max:     10.445027650378242
+          central: 13.910363715599999
+          min:     13.910363715599999
+          max:     13.910363715599999
           unit:    'GeV^2'
           latex:   '$s_\Gamma$'
-          comments: 'Subthreshold branch cut starting point. Default value: (m_Jpsi + m_pi)^2'
+          comments: 'Subthreshold branch cut starting point. Default value: (2 M_D^0)^2'
+      'B->Kll::bg_frac@LHCb2026' :
+          central: 0.0014
+          min: 0.0
+          max: 1.0
+          unit: '1'
+          latex: ''
+          comments: 'Fraction of background events in the LHCb B->Kll analysis'
       'b->sccbar::bound@GvDV2020' :
           central: +1.0
           min:     +1.0
