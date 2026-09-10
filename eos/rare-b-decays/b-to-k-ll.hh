@@ -53,6 +53,10 @@ namespace eos
 
             // Differential Observables
             double differential_branching_ratio(const double & q2) const;
+                // Differential branching ratio components for the decomposition into smooth, interference and J/psi contributions
+                double differential_branching_ratio_smooth(const double & q2) const;
+                double differential_branching_ratio_interference(const double & q2) const;
+                double differential_branching_ratio_jpsi(const double & q2) const;
             double differential_flat_term(const double & q2) const;
             double differential_forward_backward_asymmetry(const double & q2) const;
             double differential_ratio_muons_electrons(const double & q2) const;
@@ -103,6 +107,10 @@ namespace eos
         complex<double> F_P;
         complex<double> F_T;
         complex<double> F_T5;
+
+        // J/psi contributions to F_V implemented in GRV2026
+        complex<double> F_V_jpsi = 0.0;
+        complex<double> F_V_no_jpsi = 0.0;
     };
 }
 

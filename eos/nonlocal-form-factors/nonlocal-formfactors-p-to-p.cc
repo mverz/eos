@@ -1410,7 +1410,11 @@ namespace eos
                 // Subthreshold branch cut starting point and the ccbar poles below it.
                 UsedParameter s_G;
 
-                const double decay_w_Jpsi = 92.9 * 1e-6; // width of J/psi in GeV
+                const double decay_w_Jpsi = 92.6 * 1e-6; // width of J/psi in GeV
+                const complex<double> s_Jpsi = power_of<2>(m_Jpsi() - 0.5 * complex<double>(0, 1) * decay_w_Jpsi); // complex pole of J/psi in GeV^2
+
+                const double decay_w_psi2S = 293 * 1e-6; // width of psi(2S) in GeV
+                const complex<double> s_psi2S = power_of<2>(m_psi2S() - 0.5 * complex<double>(0, 1) * decay_w_psi2S); // complex pole of psi(2S) in GeV^2
 
                 const std::vector<complex<double>> m_Gamma;
                 const std::vector<complex<double>> z_poles; // z(m ^2) for m < s_G in m_Gamma
@@ -1491,7 +1495,7 @@ namespace eos
                     s_G(p["b->sccbar::t_V@GRV2026"], *this),
                     m_Gamma({
                         m_Jpsi() - 0.5 * complex<double>(0, 1) * decay_w_Jpsi,
-                        m_psi2S(),
+                        m_psi2S() - 0.5 * complex<double>(0, 1) * decay_w_psi2S,
                         m_Bs_star()
                     }),
                     z_poles(make_z_poles(m_Gamma, s_G(), t_0())),
@@ -1622,7 +1626,7 @@ namespace eos
                 inline complex<double> H_residue_jpsi(const std::array<unsigned, 6> & phi_parameters, const std::vector<double> & Mres, const std::array<complex<double>, interpolation_order + 1> & interpolation_values) const
                 {
                     const complex<double> m_Jpsi2  = power_of<2>(m_Jpsi() - 0.5 * complex<double>(0, 1) * decay_w_Jpsi);
-                    const double m_psi2S2 = power_of<2>(m_psi2S);
+                    const complex<double> m_psi2S2 = power_of<2>(m_psi2S() - 0.5 * complex<double>(0, 1) * decay_w_psi2S);
 
                     const double s_0   = this->t_0();
                     const double sG    = this->s_G();
@@ -1641,7 +1645,7 @@ namespace eos
                 inline complex<double> H_residue_psi2s(const std::array<unsigned, 6> & phi_parameters, const std::vector<double> & Mres, const std::array<complex<double>, interpolation_order + 1> & interpolation_values) const
                 {
                     const complex<double> m_Jpsi2  = power_of<2>(m_Jpsi() - 0.5 * complex<double>(0, 1) * decay_w_Jpsi);
-                    const double m_psi2S2 = power_of<2>(m_psi2S);
+                    const complex<double> m_psi2S2 = power_of<2>(m_psi2S() - 0.5 * complex<double>(0, 1) * decay_w_psi2S);
 
                     const double s_0   = this->t_0();
                     const double sG    = this->s_G();
@@ -1723,6 +1727,16 @@ namespace eos
                     return H_residue_jpsi(phi_parameters, Mres, interpolation_values);
                 }
 
+                complex<double> H_plus_jpsi(const double & q2) const override
+                {
+                    return H_plus_residue_jpsi() / ( q2 - s_Jpsi );
+                }
+
+                complex<double> H_plus_no_Jpsi(const double & q2) const override
+                {
+                    return H_plus(q2) - H_plus_jpsi(q2);
+                }
+
                 virtual complex<double> H_plus_residue_psi2s() const
                 {
                     const std::array<complex<double>, interpolation_order + 1> interpolation_values{
@@ -1739,6 +1753,16 @@ namespace eos
                     const std::vector<double> Mres = m_res;
 
                     return H_residue_psi2s(phi_parameters, Mres, interpolation_values);
+                }
+
+                complex<double> H_plus_psi2s(const double & q2) const override
+                {
+                    return H_plus_residue_psi2s() / ( q2 - s_psi2S );
+                }
+
+                complex<double> H_plus_no_psi2s(const double & q2) const override
+                {
+                    return H_plus(q2) - H_plus_psi2s(q2);
                 }
 
 

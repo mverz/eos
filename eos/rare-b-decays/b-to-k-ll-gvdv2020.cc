@@ -204,6 +204,15 @@ namespace eos
             calF_T_plus = q2 / m_B / (m_B + m_K) * form_factors->f_t(q2);
 
         const complex<double> calH_plus = nonlocal_formfactor->H_plus(q2);
+        complex<double>
+            calH_plus_jpsi = 0.0,
+            calH_plus_no_jpsi = 0.0;
+
+        if (opt_nonlocal_formfactor.value() == "GRV2026")
+        {
+            calH_plus_jpsi = nonlocal_formfactor->H_plus_jpsi(q2); // J/psi residue divided by the pole factor
+            calH_plus_no_jpsi = nonlocal_formfactor->H_plus_no_Jpsi(q2); // J/psi contribution subtracted from the full H_plus
+        }
 
         double F_Tkin = calF_T_plus / calF_plus * 2.0 * std::sqrt(lambda(q2)) * beta_l(q2) * m_B / q2;
         double F_Skin = calF_time / calF_plus * 0.5 * (m_B2 - m_K2) / (m_b_MSbar - m_s_MSbar);
@@ -227,6 +236,9 @@ namespace eos
                       + 2.0 * m_b_MSbar() * m_B / q2 * c7_p * calF_T_plus / calF_plus
                       + 2.0 * m_b_PS() / m_B / xi_pseudo(q2) * (dff.calT - 16.0 * power_of<2>(M_PI) * power_of<3>(m_B()) / m_b_PS() / q2 * calH_plus)
                       + 8.0 * m_l * m_B / q2 * calF_T_plus / calF_plus * wc.cT();
+
+        result.F_V_jpsi    = - 32.0 * power_of<2>(M_PI) * power_of<2>(m_B()) / ( xi_pseudo(q2) * q2 ) * calH_plus_jpsi;
+        result.F_V_no_jpsi = result.F_V - result.F_V_jpsi;
 
         return result;
     }

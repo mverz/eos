@@ -147,6 +147,49 @@ namespace eos
             return result;
         }
 
+        inline std::array<double, 4> differential_branching_ratio_jpsi_decomposition(const double & q2) const
+        {
+            // Standard full amplitude
+            const auto full = amplitude_generator->amplitudes(q2);
+
+            // Smooth amplitude: replace F_V with F_V_no_jpsi
+            auto smooth = full;
+            smooth.F_V = full.F_V_no_jpsi;
+
+            // J/psi amplitude: only the J/psi part of F_V is nonzero
+            BToKDilepton::Amplitudes jpsi{};
+            jpsi.F_V = full.F_V_jpsi;
+
+            const auto full_coefficients = angular_coefficients_array(full, q2);
+            const auto smooth_coefficients = angular_coefficients_array(smooth, q2);
+            const auto jpsi_coefficients = angular_coefficients_array(jpsi, q2);
+
+            const auto coefficients_to_rate =
+                [this](const std::array<double, 3> & coefficients)
+                {
+                    return 2.0 * (coefficients[0] + coefficients[2] / 3.0) * tau() / hbar();
+                };
+
+            const double full_rate =
+                coefficients_to_rate(full_coefficients);
+
+            const double smooth_rate =
+                coefficients_to_rate(smooth_coefficients);
+
+            const double jpsi_rate =
+                coefficients_to_rate(jpsi_coefficients);
+
+            const double interference_rate =
+                full_rate - smooth_rate - jpsi_rate;
+
+            return {
+                smooth_rate,
+                interference_rate,
+                jpsi_rate,
+                full_rate
+            };
+        }
+
         inline std::array<double, 3> differential_angular_coefficients_array(const double & q2) const
         {
             return angular_coefficients_array(amplitude_generator->amplitudes(q2), q2);
@@ -216,6 +259,24 @@ namespace eos
     BToKDilepton::differential_branching_ratio(const double & q2) const
     {
         return _imp->differential_branching_ratio(_imp->differential_angular_coefficients(q2));
+    }
+
+    double
+    BToKDilepton::differential_branching_ratio_smooth(const double & q2) const
+    {
+        return _imp->differential_branching_ratio_jpsi_decomposition(q2)[0];
+    }
+
+    double
+    BToKDilepton::differential_branching_ratio_interference(const double & q2) const
+    {
+        return _imp->differential_branching_ratio_jpsi_decomposition(q2)[1];
+    }
+
+    double
+    BToKDilepton::differential_branching_ratio_jpsi(const double & q2) const
+    {
+        return _imp->differential_branching_ratio_jpsi_decomposition(q2)[2];
     }
 
     double

@@ -105,6 +105,14 @@ namespace eos
             ///@{
 
             virtual complex<double> H_plus_residue_jpsi() const { return jpsi_residues_not_implemented(); };
+            virtual complex<double> H_plus_jpsi(const double & q2) const
+            {
+                throw InternalError("H_plus_jpsi not implemented");
+            }
+            virtual complex<double> H_plus_no_Jpsi(const double & q2) const
+            {
+                throw InternalError("H_plus_no_Jpsi not implemented");
+            }
 
             ///@}
 
@@ -112,6 +120,14 @@ namespace eos
             ///@{
 
             virtual complex<double> H_plus_residue_psi2s() const { return psi2s_residues_not_implemented(); };
+            virtual complex<double> H_plus_psi2s(const double & q2) const
+            {
+                throw InternalError("H_plus_psi2s not implemented");
+            }
+            virtual complex<double> H_plus_no_psi2s(const double & q2) const
+            {
+                throw InternalError("H_plus_no_psi2s not implemented");
+            }
 
             ///@}
 

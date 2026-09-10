@@ -329,6 +329,24 @@ namespace eos
                         &BToKDilepton::differential_branching_ratio,
                         std::make_tuple("q2")),
 
+                make_observable("B->Kll::dBR/ds-smooth",
+                        R"(smooth contribution to d\mathcal{B}(\bar{B}\to \bar{K}\ell^+\ell^-)/dq^2)",
+                        Unit::InverseGeV2(),
+                        &BToKDilepton::differential_branching_ratio_smooth,
+                        std::make_tuple("q2")),
+
+                make_observable("B->Kll::dBR/ds-interference",
+                        R"(J/\psi interference contribution to d\mathcal{B}(\bar{B}\to \bar{K}\ell^+\ell^-)/dq^2)",
+                        Unit::InverseGeV2(),
+                        &BToKDilepton::differential_branching_ratio_interference,
+                        std::make_tuple("q2")),
+
+                make_observable("B->Kll::dBR/ds-jpsi",
+                        R"(J/\psi contribution to d\mathcal{B}(\bar{B}\to \bar{K}\ell^+\ell^-)/dq^2)",
+                        Unit::InverseGeV2(),
+                        &BToKDilepton::differential_branching_ratio_jpsi,
+                        std::make_tuple("q2")),
+
                 make_observable("B->Kll::F_H(q2)", R"(F_\mathrm{H}(\bar{B}\to \bar{K}\ell^+\ell^-)(q^2))",
                         Unit::None(),
                         &BToKDilepton::differential_flat_term,
