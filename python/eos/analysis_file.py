@@ -105,13 +105,13 @@ class AnalysisFile:
                 eos.info(f'Inserted observable: { o.name }')
             eos.completed(f'... finished inserting {len(self._obs)} custom observables')
 
-        # Insert one hardcoded runtime SignalPDF
+        # ----- TEMPORARY: Insert one hardcoded runtime SignalPDF -----
+
         eos.inprogress('Inserting hardcoded runtime SignalPDF ...')
         rt_pdf_name = 'B->Kll::RTdiffdecayrate(q2)'
-        num_obs_name = 'B->Kll::eff-differential-decay-rate'
-        #num_obs_name = 'B->Kll::unbinned-debug'
+        num_obs_name = 'B->Kll::dressed-differential-decay-rate'
         hardcoded_options = eos.Options({'tag':'GvDV2020','form-factors':'G2026', 'nonlocal-formfactor':'GRV2026', 'model':'WET'})
-        padding_frac = 0.3
+        padding_frac = 0.15
 
         eos.SignalPDFs().insert(
             rt_pdf_name,
@@ -122,6 +122,8 @@ class AnalysisFile:
         )
         eos.info(f'Inserted hardcoded runtime SignalPDF: {rt_pdf_name}')
         eos.completed('... finished inserting hardcoded runtime SignalPDF')
+
+        # ----- Finished inserting hardcoded runtime SignalPDF -----
 
         if 'parameters' not in self.input_data:
             self._params = []
@@ -214,92 +216,113 @@ class AnalysisFile:
 
         unbinned_options = dict(global_options)
 
-        # Hardcoded unbinned likelihood for B->Kll in the window
-        # sqrt(q2) in (1.8, 2.5) GeV
+        # ----- TEMPORARY: Hardcoded unbinned likelihood for B->Kll -----
+
         eos.inprogress('Creating hardcoded Unbinned1D likelihood block ...')
 
-        cache = eos.ObservableCache(parameters)
-
-        # LHCb Resolution data (for now only in region2 and in particular [1.8, 2.5] GeV)
-
-        q2_min = 1.8**2
-        q2_max = 2.51**2
-        # q2_min = 2.295000
-        # q2_max = 2.705000
-
-        padding_frac = 0.3
-        q2_min_grid = q2_min - padding_frac * (q2_max - q2_min)
-        q2_max_grid = q2_max + padding_frac * (q2_max - q2_min)
-
-        ngridpoints = int(fixed_parameters.get('B->Kll::Ngridpoints'))
-
-        q2_physical_grid = np.linspace(q2_min, q2_max, ngridpoints)
-        q2grid = np.linspace(q2_min_grid, q2_max_grid, ngridpoints)
-
-        kinematics = [
-            eos.Kinematics({'q2': q2, 'q2_min': q2_min_grid, 'q2_max': q2_max_grid})
-            for q2 in q2grid
-        ]
-
-        def model_res2(x):
-            model_params = [
-                3.079370e-02,
-                3.189588e-02,
-                2.149983e+00,
-                6.224039e-03,
-                5.728954e-03,
-                2.545989e+01,
-                1.120756e+00,
-            ]
-            A1, A2, mu, sigma1, sigma2, n, a = model_params
-
-            t = (x - mu) / sigma2
-            A = (n/a)**n * np.exp(-a**2/2)
-            B = n/a - a
-
-            if (t > -a and t < a):
-                return A1 * np.exp( -(x - mu)**2 / (2*sigma1**2) ) + A2 * np.exp( -t**2 / 2 )
-            if (t <= -a):
-                return A1 * np.exp( -(x - mu)**2 / (2*sigma1**2) ) + A2 * A * (B - t)**(-n)
-            if (t >= a):
-                return A1 * np.exp( -(x - mu)**2 / (2*sigma1**2) ) + A2 * A * (B + t)**(-n)
-
-        resolution2 = [model_res2(np.sqrt(q2)) for q2 in q2grid]
-        resolution2 = np.roll(resolution2, len(resolution2) // 2 - np.argmax(resolution2))
-
-        unit_res = [0 for q2 in q2grid]
-        unit_res[len(unit_res) // 2] = 1.0
-
-        lhcb_data2 = np.loadtxt(
-            "/mt/external/mverzeletti/Repositories/eos/upbsll/py/LHCb-data.csv",
-            delimiter=",",
-            skiprows=1,
-            unpack=True,
-            dtype=np.float64,
-            usecols=(0)
-        )
-        lhcb_data2 = (lhcb_data2/1000.0)**2
-        lhcb_data2 = lhcb_data2[(lhcb_data2>q2_min) & (lhcb_data2<q2_max)]
-
-        observations = [eos.Kinematics({'q2': q2}) for q2 in lhcb_data2]
-        #observations = [eos.Kinematics({'q2': q2}) for q2 in mydata]
-
-        llh_block = eos.LogLikelihoodBlock.Unbinned1D(
-            cache,
-            "B->Kll::RTdiffdecayrate(q2)",
-            kinematics,
-            eos.Options(**unbinned_options),
-            resolution2,
-            observations
-        )
-
         unbinned_flag = float(fixed_parameters.get('B->K::UnbinnedFlag'))
-        if (unbinned_flag):
+
+        if (unbinned_flag == 0.0):
+            eos.completed('... skipped creating hardcoded Unbinned1D likelihood block since B->K::UnbinnedFlag = False')
+        else:
+            cache = eos.ObservableCache(parameters)
+
+            q2_min = float(fixed_parameters.get('B->Kll::unbinned_q2_min'))
+            q2_max = float(fixed_parameters.get('B->Kll::unbinned_q2_max'))
+
+            # q2_min = 1.8**2
+            # q2_max = 2.5**2
+            # q2_max = 3.4**2
+
+            # q2_min = 2.295000
+            # q2_max = 2.705000
+
+            # the padding fraction must be the same as the one used in the hardcoded runtime SignalPDF
+            padding_frac = 0.15
+            q2_min_grid = q2_min - padding_frac * (q2_max - q2_min)
+            q2_max_grid = q2_max + padding_frac * (q2_max - q2_min)
+
+            if False: # SELECT TRUE IF YOU WANT TO FORCE THE GRID TO INCLUDE J/psi I.E. IF THE PHYSICAL WIDTH IS NOT RESOLVED
+                xJpsi = 3.0969**2
+                x0_grid = q2_min_grid
+                x1_grid = q2_max_grid
+
+                n_steps_a = int(fixed_parameters.get('B->Kll::Ngridpoints'))
+                w_step = (xJpsi - x0_grid) / n_steps_a
+
+                n_steps_b = np.ceil((x1_grid - xJpsi) / w_step)
+                if n_steps_b % 2 != 0:
+                    n_steps_b = n_steps_b + 1
+
+                ngridpoints = int(n_steps_a + n_steps_b + 1)
+                new_q2_max = x0_grid + w_step * (ngridpoints - 1)
+                q2grid = np.linspace(x0_grid, new_q2_max, ngridpoints)
+
+                q2_max_grid = new_q2_max
+            else:
+                ngridpoints = int(fixed_parameters.get('B->Kll::Ngridpoints'))
+                q2grid = np.linspace(q2_min_grid, q2_max_grid, ngridpoints)
+
+
+            # This kinematics is only used as input for the hardcoded Unbinned1D likelihood
+            kinematics = [ eos.Kinematics({'q2': q2, 'q2_min': q2_min_grid, 'q2_max': q2_max_grid}) for q2 in q2grid ]
+
+            def model_res2(x, A1, A2, mu, sigma1, sigma2, n, a):
+                t = (x - mu) / sigma2
+                A = (n/a)**n * np.exp(-a**2/2)
+                B = n/a - a
+
+                if (t > -a and t < a):
+                    return A1 * np.exp( -(x - mu)**2 / (2*sigma1**2) ) + A2 * np.exp( -t**2 / 2 )
+                if (t <= -a):
+                    return A1 * np.exp( -(x - mu)**2 / (2*sigma1**2) ) + A2 * A * (B - t)**(-n)
+                if (t >= a):
+                    return A1 * np.exp( -(x - mu)**2 / (2*sigma1**2) ) + A2 * A * (B + t)**(-n)
+
+            def res2(q2):
+                model_params = [
+                    3.079370e-02,
+                    3.189588e-02,
+                    2.6,
+                    6.224039e-03,
+                    5.728954e-03,
+                    2.545989e+01,
+                    1.120756e+00,
+                ]
+                return model_res2(np.sqrt(q2), *model_params)
+
+            resolution2 = [res2(q2) for q2 in q2grid]
+            resolution2 = np.roll(resolution2, len(resolution2) // 2 - np.argmax(resolution2))
+
+
+            lhcb_data2 = np.loadtxt(
+                "/mt/external/mverzeletti/Repositories/eos/upbsll/py/LHCb-data.csv",
+                delimiter=",",
+                skiprows=1,
+                unpack=True,
+                dtype=np.float64,
+                usecols=(0)
+            )
+            lhcb_data2 = ( lhcb_data2 / 1000.0 )**2
+            # Filter the data to only include events in the range [q2_min, q2_max], NOT the padded range
+            lhcb_data2 = lhcb_data2[ (lhcb_data2 > q2_min) & (lhcb_data2 < q2_max) ]
+
+            observations = [eos.Kinematics({'q2': q2}) for q2 in lhcb_data2]
+
+            llh_block = eos.LogLikelihoodBlock.Unbinned1D(
+                cache,
+                "B->Kll::RTdiffdecayrate(q2)",
+                kinematics,
+                eos.Options(**unbinned_options),
+                resolution2,
+                observations
+            )
+
             external_likelihood.append(llh_block)
             eos.info(f'Added hardcoded Unbinned1D block with {len(observations)} pseudo-events in q2 = [ {q2_min:.3f}, {q2_max:.3f} ] GeV^2')
             eos.completed('... finished creating hardcoded Unbinned1D likelihood block')
-        else:
-            eos.completed('... skipped creating hardcoded Unbinned1D likelihood block since B->K::UnbinnedFlag = False')
+
+        # ----- Finished creating hardcoded Unbinned1D likelihood for B->Kll -----
 
         # Convert back to dictionaries
         prior = [ asdict(pc) for pc in prior]
