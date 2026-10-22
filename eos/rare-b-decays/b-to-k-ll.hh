@@ -50,6 +50,16 @@ namespace eos
             double angular_coeff_a_l(const double & q2) const;
             double angular_coeff_b_l(const double & q2) const;
             double angular_coeff_c_l(const double & q2) const;
+                // Differential angular coefficients for the decomposition into smooth, interference and J/psi contributions
+                double angular_coeff_a_l_smooth(const double & q2) const;
+                double angular_coeff_b_l_smooth(const double & q2) const;
+                double angular_coeff_c_l_smooth(const double & q2) const;
+                double angular_coeff_a_l_interference(const double & q2) const;
+                double angular_coeff_b_l_interference(const double & q2) const;
+                double angular_coeff_c_l_interference(const double & q2) const;
+                double angular_coeff_a_l_jpsi(const double & q2) const;
+                double angular_coeff_b_l_jpsi(const double & q2) const;
+                double angular_coeff_c_l_jpsi(const double & q2) const;
 
             // Differential Observables
             double differential_branching_ratio(const double & q2) const;

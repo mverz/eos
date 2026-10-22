@@ -372,6 +372,62 @@ namespace eos
                         &BToKDilepton::angular_coeff_c_l,
                         std::make_tuple("q2")),
 
+
+                make_observable("B->Kll::a_l_smooth(q2)",
+                        R"(smooth contribution to a_\ell(q^2))",
+                        Unit::GeV3(),
+                        &BToKDilepton::angular_coeff_a_l_smooth,
+                        std::make_tuple("q2")),
+
+                make_observable("B->Kll::b_l_smooth(q2)",
+                        R"(smooth contribution to b_\ell(q^2))",
+                        Unit::GeV3(),
+                        &BToKDilepton::angular_coeff_b_l_smooth,
+                        std::make_tuple("q2")),
+
+                make_observable("B->Kll::c_l_smooth(q2)",
+                        R"(smooth contribution to c_\ell(q^2))",
+                        Unit::GeV3(),
+                        &BToKDilepton::angular_coeff_c_l_smooth,
+                        std::make_tuple("q2")),
+
+                make_observable("B->Kll::a_l_interference(q2)",
+                        R"(interference contribution to a_\ell(q^2))",
+                        Unit::GeV3(),
+                        &BToKDilepton::angular_coeff_a_l_interference,
+                        std::make_tuple("q2")),
+
+                make_observable("B->Kll::b_l_interference(q2)",
+                        R"(interference contribution to b_\ell(q^2))",
+                        Unit::GeV3(),
+                        &BToKDilepton::angular_coeff_b_l_interference,
+                        std::make_tuple("q2")),
+
+                make_observable("B->Kll::c_l_interference(q2)",
+                        R"(interference contribution to c_\ell(q^2))",
+                        Unit::GeV3(),
+                        &BToKDilepton::angular_coeff_c_l_interference,
+                        std::make_tuple("q2")),
+
+                make_observable("B->Kll::a_l_jpsi(q2)",
+                        R"(J/\psi contribution to a_\ell(q^2))",
+                        Unit::GeV3(),
+                        &BToKDilepton::angular_coeff_a_l_jpsi,
+                        std::make_tuple("q2")),
+
+                make_observable("B->Kll::b_l_jpsi(q2)",
+                        R"(J/\psi contribution to b_\ell(q^2))",
+                        Unit::GeV3(),
+                        &BToKDilepton::angular_coeff_b_l_jpsi,
+                        std::make_tuple("q2")),
+
+                make_observable("B->Kll::c_l_jpsi(q2)",
+                        R"(J/\psi contribution to c_\ell(q^2))",
+                        Unit::GeV3(),
+                        &BToKDilepton::angular_coeff_c_l_jpsi,
+                        std::make_tuple("q2")),
+
+
                 make_expression_observable("B->Kll::R_K(q2)", R"(R_K(q^2))",
                         Unit::None(),
                         R"(

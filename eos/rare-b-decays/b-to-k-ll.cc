@@ -147,6 +147,40 @@ namespace eos
             return result;
         }
 
+        inline std::array<std::array<double, 3>, 4> angular_coefficients_jpsi_decomposition_array(const double & q2) const
+        {
+            // returns an array of 4 arrays of 3 elements each, corresponding to the 3 angular coefficients for each of the 4 amplitude components
+
+            // Standard full amplitude
+            const auto full = amplitude_generator->amplitudes(q2);
+
+            // Smooth amplitude: replace F_V with F_V_no_jpsi
+            auto smooth = full;
+            smooth.F_V = full.F_V_no_jpsi;
+
+            // J/psi amplitude: only the J/psi part of F_V is nonzero
+            BToKDilepton::Amplitudes jpsi{};
+            jpsi.F_V = full.F_V_jpsi;
+
+            const auto full_coefficients = angular_coefficients_array(full, q2);
+            const auto smooth_coefficients = angular_coefficients_array(smooth, q2);
+            const auto jpsi_coefficients = angular_coefficients_array(jpsi, q2);
+
+            std::array<double, 3> interference_coefficients;
+
+            for (unsigned index = 0; index < 3; ++index)
+            {
+                interference_coefficients[index] = full_coefficients[index] - smooth_coefficients[index] - jpsi_coefficients[index];
+            }
+
+            return {
+                full_coefficients,
+                smooth_coefficients,
+                interference_coefficients,
+                jpsi_coefficients
+            };
+        }
+
         inline std::array<double, 4> differential_branching_ratio_jpsi_decomposition(const double & q2) const
         {
             // Standard full amplitude
@@ -199,6 +233,8 @@ namespace eos
         {
             return BToKDilepton::AngularCoefficients(differential_angular_coefficients_array(q2));
         }
+
+
 
         // cf. [BHP:2007A], Eq. (4.8)
         inline double unnormalized_decay_width(const BToKDilepton::AngularCoefficients & a) const
@@ -312,6 +348,56 @@ namespace eos
     {
         return _imp->differential_angular_coefficients(q2).c_l;
     }
+
+        // Differential angular coefficients for the decomposition into smooth, interference and J/psi contributions
+        double
+        BToKDilepton::angular_coeff_a_l_smooth(const double & q2) const
+        {
+            return _imp->angular_coefficients_jpsi_decomposition_array(q2)[1][0];
+        }
+        double
+        BToKDilepton::angular_coeff_b_l_smooth(const double & q2) const
+        {
+            return _imp->angular_coefficients_jpsi_decomposition_array(q2)[1][1];
+        }
+        double
+        BToKDilepton::angular_coeff_c_l_smooth(const double & q2) const
+        {
+            return _imp->angular_coefficients_jpsi_decomposition_array(q2)[1][2];
+        }
+
+        double
+        BToKDilepton::angular_coeff_a_l_interference(const double & q2) const
+        {
+            return _imp->angular_coefficients_jpsi_decomposition_array(q2)[2][0];
+        }
+        double
+        BToKDilepton::angular_coeff_b_l_interference(const double & q2) const
+        {
+            return _imp->angular_coefficients_jpsi_decomposition_array(q2)[2][1];
+        }
+        double
+        BToKDilepton::angular_coeff_c_l_interference(const double & q2) const
+        {
+            return _imp->angular_coefficients_jpsi_decomposition_array(q2)[2][2];
+        }
+
+        double
+        BToKDilepton::angular_coeff_a_l_jpsi(const double & q2) const
+        {
+            return _imp->angular_coefficients_jpsi_decomposition_array(q2)[3][0];
+        }
+        double
+        BToKDilepton::angular_coeff_b_l_jpsi(const double & q2) const
+        {
+            return _imp->angular_coefficients_jpsi_decomposition_array(q2)[3][1];
+        }
+        double
+        BToKDilepton::angular_coeff_c_l_jpsi(const double & q2) const
+        {
+            return _imp->angular_coefficients_jpsi_decomposition_array(q2)[3][2];
+        }
+
 
     double
     BToKDilepton::two_differential_decay_width(const double & q2, const double & c_theta_l_LHCb) const
