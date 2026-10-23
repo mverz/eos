@@ -4,6 +4,7 @@
  * Copyright (c) 2019 Nico Gubernari
  * Copyright (c) 2021 Méril Reboud
  * Copyright (c) 2025 Danny van Dyk
+ * Copyright (c) 2026 Matteo Verzeletti
  *
  * This file is part of the EOS project. EOS is free software;
  * you can redistribute it and/or modify it under the terms of the GNU General
@@ -22,6 +23,9 @@
 #include <eos/nonlocal-form-factors/nonlocal-formfactors.hh>
 
 #include <test/test.hh>
+
+#include <iomanip>
+#include <limits>
 
 using namespace test;
 using namespace eos;
@@ -150,3 +154,127 @@ class NonlocalFormFactorGvDV2020Test : public TestCase
             }
         }
 } nonlocal_formfactor_gvdv2020_test;
+
+class NonlocalFormFactorGRV2026Test : public TestCase
+{
+    public:
+        NonlocalFormFactorGRV2026Test() :
+            TestCase("nonlocal_formfactor_GRV2026_test")
+        {
+        }
+
+        virtual void
+        run() const
+        {
+            static const double eps = 1e-5;
+
+            {
+                Parameters p                                    = Parameters::Defaults();
+                p["mass::B_d"]                                  = 5.279;
+                p["mass::K_d"]                                  = 0.492;
+                p["mass::J/psi"]                                = 3.0969;
+                p["mass::psi(2S)"]                              = 3.6860;
+                p["mass::D^0"]                                  = 1.86723;
+                p["b->sccbar::t_0"]                             = 4.0;
+                p["b->sccbar::t_s"]                             = -17.4724;
+                p["b->sccbar::t_V@GRV2026"]                     = 13.910363715599999; // DDbar subthreshold
+                p["b->sccbar::chi_tilde_OPE_V@GRV2026"]         = +5.796e-5;
+                p["B->Kccbar::Re_Hhat_at_m7_plus@GRvDV2022"]    = 0.01;
+                p["B->Kccbar::Im_Hhat_at_m7_plus@GRvDV2022"]    = -0.02;
+                p["B->Kccbar::Re_Hhat_at_m5_plus@GRvDV2022"]    = -0.03;
+                p["B->Kccbar::Im_Hhat_at_m5_plus@GRvDV2022"]    = 0.04;
+                p["B->Kccbar::Re_Hhat_at_m3_plus@GRvDV2022"]    = -0.05;
+                p["B->Kccbar::Im_Hhat_at_m3_plus@GRvDV2022"]    = -0.06;
+                p["B->Kccbar::Re_Hhat_at_m1_plus@GRvDV2022"]    = 0.07;
+                p["B->Kccbar::Im_Hhat_at_m1_plus@GRvDV2022"]    = -0.08;
+                p["B->Kccbar::Abs_Hhat_at_Jpsi_plus@GRvDV2022"] = 0.09;
+                p["B->Kccbar::Arg_Hhat_at_Jpsi_plus@GRvDV2022"] = 0.10;
+                p["B->Kccbar::Re_Hhat_at_t0_plus@GRvDV2022"]    = 0.11;
+                p["B->Kccbar::Im_Hhat_at_t0_plus@GRvDV2022"]    = -0.12;
+
+                Options o = {
+                    { "model"_ok, "WET"_ov }
+                };
+
+                auto nff = NonlocalFormFactor<PToP>::make("B->K::GRV2026", p, o);
+
+
+                auto diagnostics = nff->diagnostics();
+
+                std::cout << std::setprecision(17);
+                std::cout << "Diagnostics:" << std::endl;
+                for (auto & d : diagnostics)
+                {
+                    std::cout << d.description << ": " << d.value << std::endl;
+                }
+                std::cout << "Diagnostics ended" << std::endl;
+
+                static const std::vector<std::pair<double, double>> reference{
+                    std::make_pair(-61.874744727032436, eps),     // Re{phi_+(q2 = -7.0)}
+                    std::make_pair(-388.41456644867367, eps),     // Re{phi_+(q2 = -1.0)}
+                    std::make_pair(69.429346919727379, eps),      // Re{phi_+(q2 = 5.0)}
+                    std::make_pair(22.681788564918079, eps),      // Re{phi_+(q2 = 16.0)}
+                    std::make_pair(22.723306968408291, eps),      // Im{phi_+(q2 = 16.0)}
+                    std::make_pair(1.089969122226357, eps),       // Re{phi_+(q2 = 25.0)}
+                    std::make_pair(0.2031583642442763, eps),      // Im{phi_+(q2 = 25.0)}
+                    std::make_pair(-0.21859161591241955, eps),    // Re{phi_+(q2 = 35.0)}
+                    std::make_pair(0.67332270237146974, eps),     // Im{phi_+(q2 = 35.0)}
+                                                                  /* form factors */
+                    std::make_pair(-0.00055342207322183856, eps), // Re{H_+(q2 = -7.000000)}
+                    std::make_pair(0.0011068441464436773, eps),   // Im{H_+(q2 = -7.000000)}
+                    std::make_pair(-0.00080787244873840717, eps), // Re{H_+(q2 = -1.000000)}
+                    std::make_pair(0.00092328279855817996, eps),  // Im{H_+(q2 = -1.000000)}
+                    std::make_pair(-0.067025484719303363, eps),   // Re{H_+(q2 = 5.000000)}
+                    std::make_pair(-0.099427862630482061, eps),   // Im{H_+(q2 = 5.000000)}
+                    std::make_pair(-42.81813515796491, eps),      // Re{H_+(q2 = 11.000000)}
+                    std::make_pair(-54.218478556741729, eps),     // Im{H_+(q2 = 11.000000)}
+                                                                  /* unitarity bounds */
+                    std::make_pair(1835751505.1550193, eps),      // GRV2026 weak bound
+                    std::make_pair(1938463628.4095731, eps),      // GRV2026 strong bound
+                };
+                TEST_CHECK_DIAGNOSTICS(diagnostics, reference);
+
+                // -------------------Different subthreshold-------------------
+
+                p["b->sccbar::t_V@GRV2026"] = 10.445027650378242; // J/psi pi subthreshold
+
+                auto nff2 = NonlocalFormFactor<PToP>::make("B->K::GRV2026", p, o);
+
+                auto diagnostics2 = nff2->diagnostics();
+
+                std::cout << "Diagnostics:" << std::endl;
+                for (auto & d : diagnostics2)
+                {
+                    std::cout << d.description << ": " << d.value << std::endl;
+                }
+                std::cout << "Diagnostics ended" << std::endl;
+
+                static const std::vector<std::pair<double, double>> reference2{
+                    /* outer functions */
+                    std::make_pair(-23.809485784560046, eps),     // Re{phi_+(q2 = -7.0)}
+                    std::make_pair(-135.77424625055733, eps),     // Re{phi_+(q2 = -1.0)}
+                    std::make_pair(21.300493463109653, eps),      // Re{phi_+(q2 = 5.0)}
+                    std::make_pair(2.9226271941942188, eps),      // Re{phi_+(q2 = 16.0)}
+                    std::make_pair(-1.5141421546023177, eps),     // Im{phi_+(q2 = 16.0)}
+                    std::make_pair(0.14399945914555839, eps),     // Re{phi_+(q2 = 25.0)}
+                    std::make_pair(-0.32461685293221776, eps),    // Im{phi_+(q2 = 25.0)}
+                    std::make_pair(0.26317861196563697, eps),     // Re{phi_+(q2 = 35.0)}
+                    std::make_pair(0.20593257143494992, eps),     // Im{phi_+(q2 = 35.0)}
+                                                                  /* form factors */
+                    std::make_pair(-0.00065870238051917698, eps), // Re{H_+(q2 = -7.000000)}
+                    std::make_pair(0.0013174047610383542, eps),   // Im{H_+(q2 = -7.000000)}
+                    std::make_pair(-0.00090315553726101931, eps), // Re{H_+(q2 = -1.000000)}
+                    std::make_pair(0.0010321777568697368, eps),   // Im{H_+(q2 = -1.000000)}
+                    std::make_pair(-0.12900744541590597, eps),    // Re{H_+(q2 = 5.000000)}
+                    std::make_pair(-0.19281787030543346, eps),    // Im{H_+(q2 = 5.000000)}
+                    std::make_pair(564.39593178456471, eps),      // Re{H_+(q2 = 11.000000)}
+                    std::make_pair(388.05398135569044, eps),      // Im{H_+(q2 = 11.000000)}
+                                                                  /* unitarity bounds */
+                    std::make_pair(82429717.635367349, eps),      // GRV2026 weak bound
+                    std::make_pair(86060987.502345353, eps),      // GRV2026 strong bound
+
+                };
+                TEST_CHECK_DIAGNOSTICS(diagnostics2, reference2);
+            }
+        }
+} nonlocal_formfactor_grv2026_test;
