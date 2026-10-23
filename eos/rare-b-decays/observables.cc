@@ -279,6 +279,28 @@ namespace eos
 
                   make_observable("B->Kll::c_l(q2)", R"(c_\ell(\bar{B}\to \bar{K}\ell^+\ell^-)(q^2))", Unit::GeV3(), &BToKDilepton::angular_coeff_c_l, std::make_tuple("q2")),
 
+                  make_observable("B->Kll::a_l(m_ll)",
+                                  R"(a_\ell(\bar{B}\to \bar{K}\ell^+\ell^-)(m_{\ell\ell}^2))",
+                                  Unit::GeV3(),
+                                  &BToKDilepton::angular_coeff_a_l_m_ll,
+                                  std::make_tuple("m_ll")),
+
+                  make_observable("B->Kll::b_l(m_ll)",
+                                  R"(b_\ell(\bar{B}\to \bar{K}\ell^+\ell^-)(m_{\ell\ell}^2))",
+                                  Unit::GeV3(),
+                                  &BToKDilepton::angular_coeff_b_l_m_ll,
+                                  std::make_tuple("m_ll")),
+
+                  make_observable("B->Kll::c_l(m_ll)",
+                                  R"(c_\ell(\bar{B}\to \bar{K}\ell^+\ell^-)(m_{\ell\ell}^2))",
+                                  Unit::GeV3(),
+                                  &BToKDilepton::angular_coeff_c_l_m_ll,
+                                  std::make_tuple("m_ll")),
+
+                  make_observable("B->Kll::f_+(m_ll)", R"(f_+^{B\to K}(m_{\ell\ell}^2))", Unit::None(), &BToKDilepton::f_p_m_ll, std::make_tuple("m_ll")),
+
+                  make_observable("B->Kll::f_0(m_ll)", R"(f_0^{B\to K}(m_{\ell\ell}^2))", Unit::None(), &BToKDilepton::f_0_m_ll, std::make_tuple("m_ll")),
+
                   make_expression_observable("B->Kll::R_K(q2)",
                                              R"(R_K(q^2))",
                                              Unit::None(),

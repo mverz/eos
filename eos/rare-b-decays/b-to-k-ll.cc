@@ -246,6 +246,36 @@ namespace eos
     }
 
     double
+    BToKDilepton::angular_coeff_a_l_m_ll(const double & m_ll) const
+    {
+        return _imp->differential_angular_coefficients(m_ll * m_ll).a_l;
+    }
+
+    double
+    BToKDilepton::angular_coeff_b_l_m_ll(const double & m_ll) const
+    {
+        return _imp->differential_angular_coefficients(m_ll * m_ll).b_l;
+    }
+
+    double
+    BToKDilepton::angular_coeff_c_l_m_ll(const double & m_ll) const
+    {
+        return _imp->differential_angular_coefficients(m_ll * m_ll).c_l;
+    }
+
+    double
+    BToKDilepton::f_p_m_ll(const double & m_ll) const
+    {
+        return _imp->amplitude_generator->form_factors->f_p(m_ll * m_ll);
+    }
+
+    double
+    BToKDilepton::f_0_m_ll(const double & m_ll) const
+    {
+        return _imp->amplitude_generator->form_factors->f_0(m_ll * m_ll);
+    }
+
+    double
     BToKDilepton::two_differential_decay_width(const double & q2, const double & c_theta_l_LHCb) const
     {
         AngularCoefficients a = _imp->differential_angular_coefficients(q2);
