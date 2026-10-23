@@ -1288,6 +1288,36 @@ CMS:2020B:
   title: Measurement of the $CP$-violating phase $\phi_\mathrm{s}$ in the
     $B^0_s \to J/\psi\, \phi(1020) \to \mu^+\mu^- K^+K^-$ channel
     in proton-proton collisions at $\sqrt{s} =$ 13 TeV
+CMS:2024A:
+  authors: Hayrapetyan, Aram et al.
+  collaboration: CMS
+  eprint:
+    archive: arXiv
+    id: 2401.07090
+  inspire-id: CMS:2024syx
+  title: Test of lepton flavor universality in $B^{\pm} \to K^{\pm}\mu^+\mu^-$
+    and $B^{\pm} \to K^{\pm}e^+e^-$ decays in proton-proton collisions at
+    $\sqrt{s} = 13$ TeV
+CMS:2024B:
+  authors: Hayrapetyan, Aram et al.
+  collaboration: CMS
+  eprint:
+    archive: arXiv
+    id: 2401.07090
+  inspire-id: CMS:2024syx
+  title: Test of lepton flavor universality in $B^{\pm} \to K^{\pm}\mu^+\mu^-$
+    and $B^{\pm} \to K^{\pm}e^+e^-$ decays in proton-proton collisions at
+    $\sqrt{s} = 13$ TeV
+CMS:2024C:
+  authors: Hayrapetyan, Aram et al.
+  collaboration: CMS
+  eprint:
+    archive: arXiv
+    id: 2401.07090
+  inspire-id: CMS:2024syx
+  title: Test of lepton flavor universality in $B^{\pm} \to K^{\pm}\mu^+\mu^-$
+    and $B^{\pm} \to K^{\pm}e^+e^-$ decays in proton-proton collisions at
+    $\sqrt{s} = 13$ TeV
 CMS+LHCb:2014A:
   authors: Khachatryan, V. et al. [CMS and LHCb]
   eprint:
