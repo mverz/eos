@@ -1678,7 +1678,7 @@ namespace eos
         complex<double> result;
 
         // LO contribution cf. [AGV:2019A] p. 31
-        result += wc.c1() * agv_2019a::f190(clp) + wc.c2() * agv_2019a::f290(clp);
+        result += wc.c1() * agv_2019a::f190(clp) + (wc.c2() + 6.0 * wc.c3() + 60.0 * wc.c5()) * agv_2019a::f290(clp);
 
         if (use_nlo)
         {
@@ -1713,15 +1713,16 @@ namespace eos
     }
 
     /*
-     * Adapter that exports the charn loops function as observables
+     * Adapter that exports the charm loops function as observables
      */
     template <> struct Implementation<CharmLoopsAdapter>
     {
             RestrictedOption opt_contribution;
 
-            UsedParameter m_b;
-            UsedParameter m_c;
-            UsedParameter mu;
+            UsedParameter          m_b;
+            UsedParameter          m_c;
+            UsedParameter          mu;
+            std::shared_ptr<Model> model;
 
             static const std::vector<OptionSpecification> options;
 
@@ -1733,8 +1734,11 @@ namespace eos
                 opt_contribution(o, options, "contribution"_ok),
                 m_b(p["mass::b(MSbar)"], u),
                 m_c(p["mass::c"], u),
-                mu(p["sb::mu"], u)
+                mu(p["sb::mu"], u),
+                model(Model::make(o.get("model"_ok, "SM"_ov), p, o))
             {
+                u.uses(*model);
+
                 auto i = contribution_map.find(opt_contribution.value());
                 if (i == contribution_map.end())
                 {
@@ -1747,7 +1751,19 @@ namespace eos
             inline agv_2019a::CharmLoopsParameters
             clp(const complex<double> & s) const
             {
-                return agv_2019a::CharmLoopsParameters(mu / m_b, s / m_b() / m_b(), (m_c * m_c) / (m_b * m_b), 1e-12);
+                return agv_2019a::CharmLoopsParameters(mu / m_b(), s / m_b() / m_b(), (m_c * m_c) / (m_b() * m_b()), 1e-12);
+            }
+
+            inline double
+            alpha_s() const
+            {
+                return model->alpha_s(mu());
+            }
+
+            inline WilsonCoefficients<BToS>
+            wc() const
+            {
+                return model->wilson_coefficients_b_to_s(mu(), LeptonFlavor::muon, false);
             }
 
             complex<double>
@@ -1785,9 +1801,28 @@ namespace eos
                        + flag_d * agv_2019a::f29d(params) + flag_e * agv_2019a::f29e(params) + flag_ctQc * agv_2019a::f29ctQc(params) + flag_ctQs * agv_2019a::f29ctQs(params)
                        + flag_ctQb * agv_2019a::f29ctQb(params);
             }
+
+            complex<double>
+            Delta_C7_Qc(const complex<double> & s) const
+            {
+                return agv_2019a::delta_c7_Qc(s, mu(), alpha_s(), m_c(), m_b(), wc(), true);
+            }
+
+            complex<double>
+            Delta_C9_Qc(const complex<double> & s) const
+            {
+                return agv_2019a::delta_c9_Qc(s, mu(), alpha_s(), m_c(), m_b(), wc(), true);
+            }
+
+            complex<double>
+            Delta_C9_Qc_LO(const complex<double> & s) const
+            {
+                return agv_2019a::delta_c9_Qc(s, mu(), alpha_s(), m_c(), m_b(), wc(), false);
+            }
     };
 
     const std::vector<OptionSpecification> Implementation<CharmLoopsAdapter>::options{
+        Model::option_specification(),
         { "contribution"_ok, { "0"_ov, "Qc"_ov, "Qsb"_ov, "a"_ov, "b"_ov, "c"_ov, "d"_ov, "e"_ov, "ctQc"_ov, "ctQs"_ov, "ctQb"_ov, "all"_ov }, "all"_ov },
     };
 
@@ -1858,6 +1893,55 @@ namespace eos
     CharmLoopsAdapter::imag_F29(const double & re_q2, const double & im_q2) const
     {
         return imag(_imp->F29(complex<double>(re_q2, im_q2)));
+    }
+
+    // To export these as observables functions of the real variable only
+    double
+    CharmLoopsAdapter::real_Delta_C7_Qc(const double & q2) const
+    {
+        complex<double> s(q2 / (_imp->m_b() * _imp->m_b()), 0.0);
+        complex<double> result = _imp->Delta_C7_Qc(s);
+        return real(result);
+    }
+
+    double
+    CharmLoopsAdapter::imag_Delta_C7_Qc(const double & q2) const
+    {
+        complex<double> s(q2 / (_imp->m_b() * _imp->m_b()), 0.0);
+        complex<double> result = _imp->Delta_C7_Qc(s);
+        return imag(result);
+    }
+
+    double
+    CharmLoopsAdapter::real_Delta_C9_Qc(const double & q2) const
+    {
+        complex<double> s(q2 / (_imp->m_b() * _imp->m_b()), 0.0);
+        complex<double> result = _imp->Delta_C9_Qc(s);
+        return real(result);
+    }
+
+    double
+    CharmLoopsAdapter::imag_Delta_C9_Qc(const double & q2) const
+    {
+        complex<double> s(q2 / (_imp->m_b() * _imp->m_b()), 0.0);
+        complex<double> result = _imp->Delta_C9_Qc(s);
+        return imag(result);
+    }
+
+    double
+    CharmLoopsAdapter::real_Delta_C9_Qc_LO(const double & q2) const
+    {
+        complex<double> s(q2 / (_imp->m_b() * _imp->m_b()), 0.0);
+        complex<double> result = _imp->Delta_C9_Qc_LO(s);
+        return real(result);
+    }
+
+    double
+    CharmLoopsAdapter::imag_Delta_C9_Qc_LO(const double & q2) const
+    {
+        complex<double> s(q2 / (_imp->m_b() * _imp->m_b()), 0.0);
+        complex<double> result = _imp->Delta_C9_Qc_LO(s);
+        return imag(result);
     }
 
     const std::set<ReferenceName> CharmLoopsAdapter::references{ "AGV:2019A"_rn };
