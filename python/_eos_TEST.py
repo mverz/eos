@@ -181,6 +181,13 @@ BINDINGS_FACTORIES = {
 BINDINGS_TESTS = {
     ('BToSWilsonCoefficients', 'c1'):            (),
     ('BToSWilsonCoefficients', 'c2'):            (),
+    ('BToSWilsonCoefficients', 'c3'):            (),
+    ('BToSWilsonCoefficients', 'c4'):            (),
+    ('BToSWilsonCoefficients', 'c5'):            (),
+    ('BToSWilsonCoefficients', 'c6'):            (),
+    ('BToSWilsonCoefficients', 'c7'):            (),
+    ('BToSWilsonCoefficients', 'c9'):            (),
+    ('BToSWilsonCoefficients', 'c10'):           (),
 
     ('Constraint', 'blocks'):                    (),
     ('Constraint', 'make'):                      ('B->D::f_++f_0@HPQCD:2015A', _OPTIONS),
@@ -547,6 +554,13 @@ BINDINGS_XFAILS_UNDOCUMENTED = {
 
     ('BToSWilsonCoefficients', 'c1'):             _TODO,
     ('BToSWilsonCoefficients', 'c2'):             _TODO,
+    ('BToSWilsonCoefficients', 'c3'):             _TODO,
+    ('BToSWilsonCoefficients', 'c4'):             _TODO,
+    ('BToSWilsonCoefficients', 'c5'):             _TODO,
+    ('BToSWilsonCoefficients', 'c6'):             _TODO,
+    ('BToSWilsonCoefficients', 'c7'):             _TODO,
+    ('BToSWilsonCoefficients', 'c9'):             _TODO,
+    ('BToSWilsonCoefficients', 'c10'):            _TODO,
 }
 
 
