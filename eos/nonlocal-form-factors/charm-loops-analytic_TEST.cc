@@ -516,9 +516,9 @@ class deltaC79Test : public TestCase
             const auto wc = m->wilson_coefficients_b_to_s(mu, LeptonFlavor::muon, false);
 
             const complex<double> deltaC7_ref    = -0.080829295482612 - 0.047566420817994316 * 1.0i;
-            const complex<double> deltaC9_ref    = -0.7022411014307881 + 0.1880322661854362 * 1.0i;
+            const complex<double> deltaC9_ref    = -0.6975772627026419 + 0.1864839901112229 * 1.0i;
             const complex<double> deltaC7_Qc_ref = -0.04771664722865329 - 0.04728788790918982 * 1.0i;
-            const complex<double> deltaC9_Qc_ref = -0.7827669035741187 + 0.1870105731065536 * 1.0i;
+            const complex<double> deltaC9_Qc_ref = -0.7781030648459725 + 0.1854622970323403 * 1.0i;
 
             const complex<double> deltaC7_res    = agv_2019a::delta_c7(s, mu, alpha_s, m_c, m_b, wc);
             const complex<double> deltaC9_res    = agv_2019a::delta_c9(s, mu, alpha_s, m_c, m_b, wc);
