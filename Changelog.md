@@ -9,6 +9,12 @@
 ### Added
 
 - Let a task declare more than one output (D. van Dyk)
+- Implement ``f_plus_T`` for the P->P form factors, and ``f_perp``, ``f_para``, ``f_long``, ``f_perp_T``, ``f_para_T``, and ``f_long_T`` for the P->V form factors in the G2026 parametrisation, which previously returned zero #1315 (M. Verzeletti)
+- Add the journal reference of [G:2026A], JHEP 10 (2026) 067 #1315 (M. Verzeletti)
+
+### Added
+
+- Test ``f_plus_T`` for ``B->pi``, ``B->K``, ``B_s->K``, ``B->D``, and ``B_s->D_s``, and the helicity form factors for ``B->K^*``, ``B_s->K^*``, ``B_s->phi``, ``B->D^*``, and ``B_s->D_s^*`` in the G2026 parametrisation #1315 (M. Verzeletti)
 
 ### Deprecated
 
